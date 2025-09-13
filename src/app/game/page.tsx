@@ -45,6 +45,7 @@ const ClickToAddPinMap: React.FC = () => {
             map.current.on("load", () => {
                 if (!map.current) return;
 
+                // 倉庫マーカー
                 storageBuildings.forEach((storage) => {
                     const iconHtml = renderToStaticMarkup(<FontAwesomeIcon icon={faIndustry} style={{ color: "#fb6aaeff", fontSize: "30px" }} />);
 
@@ -59,18 +60,6 @@ const ClickToAddPinMap: React.FC = () => {
                         pushDeliveryStack(storage);
                     });
 
-                    new maplibregl.Marker({ element: el }).setLngLat([storage.coords.longitude, storage.coords.latitude]).addTo(map.current!);
-                });
-
-                // 倉庫マーカー
-                storageBuildings.forEach((storage) => {
-                    const iconHtml = renderToStaticMarkup(<FontAwesomeIcon icon={faIndustry} style={{ color: "#fb6aaeff", fontSize: "30px" }} />);
-                    const el = document.createElement("div");
-                    el.innerHTML = iconHtml;
-                    el.style.transform = "translate(-50%, -100%)";
-                    el.addEventListener("click", () => {
-                        Game.pushDeliveryStack(storage);
-                    });
                     new maplibregl.Marker({ element: el }).setLngLat([storage.coords.longitude, storage.coords.latitude]).addTo(map.current!);
                 });
 

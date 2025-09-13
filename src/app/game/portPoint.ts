@@ -1,4 +1,4 @@
-import { PortBuilding } from "./game";
+import { PortBuilding } from "./GameContext";
 import portGeo from "./port.json";
 
 export const portPoint = {

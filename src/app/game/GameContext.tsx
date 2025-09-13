@@ -1,8 +1,8 @@
 "use client";
 
-import { CalculateRoutesCommand, CalculateRoutesCommandInput } from "@aws-sdk/client-geo-routes/dist-types/commands/CalculateRoutesCommand";
-import { GeoRoutesClient } from "@aws-sdk/client-geo-routes/dist-types/GeoRoutesClient";
-import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper/dist/types/apikey";
+import { GeoRoutesClient, CalculateRoutesCommand, CalculateRoutesCommandInput } from "@aws-sdk/client-geo-routes";
+import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper";
+
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 type GeoCoords = {
@@ -46,8 +46,8 @@ const locationClient = new GeoRoutesClient(authHelper.getClientConfig());
 async function calculateDistance(from: { latitude: number; longitude: number }, to: { latitude: number; longitude: number }): Promise<number> {
     const routeCalcParams: CalculateRoutesCommandInput = {
         TravelMode: "Car",
-        Destination: [to.latitude, to.longitude],
-        Origin: [from.latitude, from.longitude],
+        Destination: [to.longitude, to.latitude],
+        Origin: [from.longitude, from.latitude],
     };
     try {
         const command = new CalculateRoutesCommand(routeCalcParams); // ← 修正済み
@@ -55,7 +55,7 @@ async function calculateDistance(from: { latitude: number; longitude: number }, 
 
         console.log("Successfully calculated route. The distance in kilometers is : ", response);
 
-        return response.Routes![0].Summary?.Distance ?? 0;
+        return (response.Routes![0].Summary?.Distance ?? 0) / 1000;
     } catch (caught: unknown) {
         if (caught instanceof Error) {
             console.error("Unexpected error:", caught);
@@ -77,7 +77,7 @@ interface GameContextType {
     deliveryStack: Building[];
     deliveryRouteStack: DeliveryRoute[];
     deliveryResult: DeliveryResult;
-    pushDeliveryStack: (building: Building) => void;
+    pushDeliveryStack: (building: Building) => Promise<void>;
     initDeliveryStack: () => void;
 }
 
@@ -92,7 +92,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         co2Emission: 0,
     });
 
-    const pushDeliveryStack = useCallback((building: Building) => {
+    const pushDeliveryStack = useCallback(async (building: Building) => {
         let method: DeliveryMethod;
         if (building.type === "port") {
             method = "ship";
@@ -100,28 +100,35 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             method = "truck";
         }
 
-        setDeliveryStack((prevStack) => {
-            const distance = prevStack.length === 0 ? 0 : calculateDistance(prevStack[prevStack.length - 1].coords, building.coords);
-            const gasolineConsumption = calculateGasolineConsumption(method, distance);
-            const co2Emission = calculateCO2Emission(gasolineConsumption);
+        // 最新のスタックを取得
+        setDeliveryStack((currentStack) => {
+            // 非同期処理を別途実行
+            (async () => {
+                // 距離を計算（非同期処理を待つ）
+                const distance = currentStack.length === 0 ? 0 : await calculateDistance(currentStack[currentStack.length - 1].coords, building.coords);
+                const gasolineConsumption = calculateGasolineConsumption(method, distance);
+                const co2Emission = calculateCO2Emission(gasolineConsumption);
 
-            setDeliveryRouteStack((prevRouteStack) => [
-                ...prevRouteStack,
-                {
-                    method,
-                    distance,
-                    gasolineConsumption,
-                    co2Emission,
-                },
-            ]);
+                // ルートスタックを更新
+                setDeliveryRouteStack((prevRouteStack) => [
+                    ...prevRouteStack,
+                    {
+                        method,
+                        distance,
+                        gasolineConsumption,
+                        co2Emission,
+                    },
+                ]);
 
-            setDeliveryResult((prevResult) => ({
-                distance: prevResult.distance + distance,
-                gasolineConsumption: prevResult.gasolineConsumption + gasolineConsumption,
-                co2Emission: prevResult.co2Emission + co2Emission,
-            }));
+                // 結果を更新
+                setDeliveryResult((prevResult) => ({
+                    distance: prevResult.distance + distance,
+                    gasolineConsumption: prevResult.gasolineConsumption + gasolineConsumption,
+                    co2Emission: prevResult.co2Emission + co2Emission,
+                }));
+            })();
 
-            return [...prevStack, building];
+            return [...currentStack, building];
         });
     }, []);
 

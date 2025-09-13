@@ -1,4 +1,4 @@
-import { StorageBuilding } from "./game";
+import { StorageBuilding } from "./GameContext";
 import geoPoint from "./storage.json";
 
 export const storagePoint = {
