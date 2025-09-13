@@ -1,5 +1,8 @@
 "use client";
 
+import { CalculateRoutesCommand, CalculateRoutesCommandInput } from "@aws-sdk/client-geo-routes/dist-types/commands/CalculateRoutesCommand";
+import { GeoRoutesClient } from "@aws-sdk/client-geo-routes/dist-types/GeoRoutesClient";
+import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper/dist/types/apikey";
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 type GeoCoords = {
@@ -37,8 +40,28 @@ export type DeliveryResult = {
     co2Emission: number; // CO2排出量 (kg)
 };
 
-function calculateDistance(from: { latitude: number; longitude: number }, to: { latitude: number; longitude: number }): number {
-    return 100; // 仮の距離計算
+const authHelper = withAPIKey(process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY!, "us-east-1");
+const locationClient = new GeoRoutesClient(authHelper.getClientConfig());
+
+async function calculateDistance(from: { latitude: number; longitude: number }, to: { latitude: number; longitude: number }): Promise<number> {
+    const routeCalcParams: CalculateRoutesCommandInput = {
+        TravelMode: "Car",
+        Destination: [to.latitude, to.longitude],
+        Origin: [from.latitude, from.longitude],
+    };
+    try {
+        const command = new CalculateRoutesCommand(routeCalcParams); // ← 修正済み
+        const response = await locationClient.send(command);
+
+        console.log("Successfully calculated route. The distance in kilometers is : ", response);
+
+        return response.Routes![0].Summary?.Distance ?? 0;
+    } catch (caught: unknown) {
+        if (caught instanceof Error) {
+            console.error("Unexpected error:", caught);
+        }
+    }
+    return 0;
 }
 
 function calculateGasolineConsumption(method: DeliveryMethod, distance: number): number {
