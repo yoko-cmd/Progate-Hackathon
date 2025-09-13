@@ -40,11 +40,12 @@ function calculateDistance(from: GeoCoords, to: GeoCoords): number {
 }
 
 function calculateGasolineConsumption(method: DeliveryMethod, distance: number): number {
-    return 10; // 仮のガソリン消費量計算
+    const nenpi = 7.5;//燃費(km/L)
+    return distance * nenpi//ガソリン消費量計算(L)
 }
 
 function calculateCO2Emission(gasolineConsumption: number): number {
-    return gasolineConsumption * 2.31; // 仮のCO2排出量計算 (kg)
+    return gasolineConsumption * 2.31; //仮のCO2排出量計算(kg)
 }
 
 export const useGame = () => {
