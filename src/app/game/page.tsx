@@ -13,6 +13,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { useGame } from "./game";
 
 import { storagePoint } from "./storagePoint";
+import { portPoint } from "./portPoint";
+
 
 const ClickToAddPinMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
@@ -21,6 +23,9 @@ const ClickToAddPinMap: React.FC = () => {
     const Game = useGame();
 
     const storageBuildings = storagePoint.getStorages();
+    const portBuildings = portPoint.getPorts();
+
+
 
     useEffect(() => {
         if (map.current) return;
@@ -58,6 +63,44 @@ const ClickToAddPinMap: React.FC = () => {
 
                     new maplibregl.Marker({ element: el }).setLngLat([storage.coords.longitude, storage.coords.latitude]).addTo(map.current!);
                 });
+
+                // 倉庫マーカー
+                storageBuildings.forEach((storage) => {
+                    const iconHtml = renderToStaticMarkup(
+                        <FontAwesomeIcon icon={faIndustry} style={{ color: "#fb6aaeff", fontSize: "30px" }} />
+                    );
+                    const el = document.createElement("div");
+                    el.innerHTML = iconHtml;
+                    el.style.transform = "translate(-50%, -100%)";
+                    el.addEventListener("click", () => {
+                        Game.delivery.pushStack(storage);
+                    });
+                    new maplibregl.Marker({ element: el })
+                        .setLngLat([storage.coords.longitude, storage.coords.latitude])
+                        .addTo(map.current!);
+                });
+
+                // 港マーカー
+                portBuildings.forEach((port) => {
+                    const el = document.createElement("div");
+                    el.className = "port-marker";
+                    el.style.backgroundColor = "#0000ff"; // 青丸などで区別
+                    el.style.width = "16px";
+                    el.style.height = "16px";
+                    el.style.borderRadius = "50%";
+                    el.style.border = "2px solid #ffffff";
+                    el.style.boxSizing = "border-box";
+                    el.style.transform = "translate(-50%, -50%)";
+
+                    el.addEventListener("click", () => {
+                        Game.delivery.pushStack(port);
+                    });
+
+                    new maplibregl.Marker({ element: el })
+                        .setLngLat([port.coords.longitude, port.coords.latitude])
+                        .addTo(map.current!);
+                });
+
             });
         }
 

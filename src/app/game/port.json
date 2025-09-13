@@ -1,0 +1,565 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "四日市"
+      },
+      "geometry": {
+        "coordinates": [
+          136.6866338,
+          34.95287356
+        ],
+        "type": "Point"
+      },
+      "id": 0
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "舞鶴"
+      },
+      "geometry": {
+        "coordinates": [
+          135.3590591,
+          35.49455258
+        ],
+        "type": "Point"
+      },
+      "id": 1
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "鹿島"
+      },
+      "geometry": {
+        "coordinates": [
+          130.1448572,
+          33.0817549
+        ],
+        "type": "Point"
+      },
+      "id": 2
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "神戸"
+      },
+      "geometry": {
+        "coordinates": [
+          135.2426054,
+          34.67284011
+        ],
+        "type": "Point"
+      },
+      "id": 3
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "苫小牧"
+      },
+      "geometry": {
+        "coordinates": [
+          141.7219444,
+          42.59666667
+        ],
+        "type": "Point"
+      },
+      "id": 4
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "千葉"
+      },
+      "geometry": {
+        "coordinates": [
+          140.003552,
+          35.57306633
+        ],
+        "type": "Point"
+      },
+      "id": 5
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "和歌山下津"
+      },
+      "geometry": {
+        "coordinates": [
+          135.1116259,
+          34.19189456
+        ],
+        "type": "Point"
+      },
+      "id": 6
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "大分"
+      },
+      "geometry": {
+        "coordinates": [
+          131.7130323,
+          33.27375195
+        ],
+        "type": "Point"
+      },
+      "id": 7
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "大阪"
+      },
+      "geometry": {
+        "coordinates": [
+          135.3878625,
+          34.63222813
+        ],
+        "type": "Point"
+      },
+      "id": 8
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "女川"
+      },
+      "geometry": {
+        "coordinates": [
+          141.4826545,
+          38.42172794
+        ],
+        "type": "Point"
+      },
+      "id": 9
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "油津"
+      },
+      "geometry": {
+        "coordinates": [
+          131.4037409,
+          31.56834018
+        ],
+        "type": "Point"
+      },
+      "id": 10
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "伏木富山"
+      },
+      "geometry": {
+        "coordinates": [
+          137.1414449,
+          36.78893777
+        ],
+        "type": "Point"
+      },
+      "id": 11
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "宇部"
+      },
+      "geometry": {
+        "coordinates": [
+          131.2271106,
+          33.91412052
+        ],
+        "type": "Point"
+      },
+      "id": 12
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "酒田"
+      },
+      "geometry": {
+        "coordinates": [
+          139.8046782,
+          38.93565108
+        ],
+        "type": "Point"
+      },
+      "id": 13
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "水島"
+      },
+      "geometry": {
+        "coordinates": [
+          133.6960322,
+          34.47140325
+        ],
+        "type": "Point"
+      },
+      "id": 14
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "大船渡"
+      },
+      "geometry": {
+        "coordinates": [
+          141.7332051,
+          39.01910089
+        ],
+        "type": "Point"
+      },
+      "id": 15
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "西郷"
+      },
+      "geometry": {
+        "coordinates": [
+          133.3425981,
+          36.21002104
+        ],
+        "type": "Point"
+      },
+      "id": 16
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "広島"
+      },
+      "geometry": {
+        "coordinates": [
+          132.418279,
+          34.33642353
+        ],
+        "type": "Point"
+      },
+      "id": 17
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "橘"
+      },
+      "geometry": {
+        "coordinates": [
+          134.668926,
+          33.86250646
+        ],
+        "type": "Point"
+      },
+      "id": 18
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "三島川之江"
+      },
+      "geometry": {
+        "coordinates": [
+          133.5417776,
+          34.00657591
+        ],
+        "type": "Point"
+      },
+      "id": 19
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "名古屋"
+      },
+      "geometry": {
+        "coordinates": [
+          136.8358724,
+          35.01587302
+        ],
+        "type": "Point"
+      },
+      "id": 20
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "姫川"
+      },
+      "geometry": {
+        "coordinates": [
+          137.8459441,
+          37.04802352
+        ],
+        "type": "Point"
+      },
+      "id": 21
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "東京"
+      },
+      "geometry": {
+        "coordinates": [
+          139.8049179,
+          35.57386488
+        ],
+        "type": "Point"
+      },
+      "id": 22
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "平良"
+      },
+      "geometry": {
+        "coordinates": [
+          125.2755657,
+          24.82247627
+        ],
+        "type": "Point"
+      },
+      "id": 23
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "長浜"
+      },
+      "geometry": {
+        "coordinates": [
+          136.2644615,
+          35.37246811
+        ],
+        "type": "Point"
+      },
+      "id": 24
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "富岡"
+      },
+      "geometry": {
+        "coordinates": [
+          130.0383041,
+          32.52272285
+        ],
+        "type": "Point"
+      },
+      "id": 25
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "七尾"
+      },
+      "geometry": {
+        "coordinates": [
+          136.9912097,
+          37.09103044
+        ],
+        "type": "Point"
+      },
+      "id": 26
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "川崎"
+      },
+      "geometry": {
+        "coordinates": [
+          139.7742661,
+          35.48709552
+        ],
+        "type": "Point"
+      },
+      "id": 27
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "敦賀"
+      },
+      "geometry": {
+        "coordinates": [
+          136.0584975,
+          35.68990979
+        ],
+        "type": "Point"
+      },
+      "id": 28
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "博多"
+      },
+      "geometry": {
+        "coordinates": [
+          130.360713,
+          33.62686124
+        ],
+        "type": "Point"
+      },
+      "id": 29
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "相馬"
+      },
+      "geometry": {
+        "coordinates": [
+          140.9654618,
+          37.85804819
+        ],
+        "type": "Point"
+      },
+      "id": 30
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "秋田"
+      },
+      "geometry": {
+        "coordinates": [
+          140.0269037,
+          39.7622777
+        ],
+        "type": "Point"
+      },
+      "id": 31
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "鹿島"
+      },
+      "geometry": {
+        "coordinates": [
+          140.7146694,
+          35.94682024
+        ],
+        "type": "Point"
+      },
+      "id": 32
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "西郷"
+      },
+      "geometry": {
+        "coordinates": [
+          130.24493,
+          32.8761075
+        ],
+        "type": "Point"
+      },
+      "id": 33
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "尻屋岬"
+      },
+      "geometry": {
+        "coordinates": [
+          141.4373133,
+          41.41252363
+        ],
+        "type": "Point"
+      },
+      "id": 34
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "清水"
+      },
+      "geometry": {
+        "coordinates": [
+          138.5108303,
+          35.02519562
+        ],
+        "type": "Point"
+      },
+      "id": 35
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "直島"
+      },
+      "geometry": {
+        "coordinates": [
+          133.9926284,
+          34.46961619
+        ],
+        "type": "Point"
+      },
+      "id": 36
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "高知"
+      },
+      "geometry": {
+        "coordinates": [
+          133.5606096,
+          33.51338994
+        ],
+        "type": "Point"
+      },
+      "id": 37
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "小浜"
+      },
+      "geometry": {
+        "coordinates": [
+          133.9584885,
+          35.52276009
+        ],
+        "type": "Point"
+      },
+      "id": 38
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "port": "志布志"
+      },
+      "geometry": {
+        "coordinates": [
+          131.1020972,
+          31.45808596
+        ],
+        "type": "Point"
+      },
+      "id": 39
+    }
+  ]
+}

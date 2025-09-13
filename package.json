@@ -9,11 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-geo-routes": "^3.888.0",
+    "@aws-sdk/client-location": "^3.888.0",
+    "@aws/amazon-location-utilities-auth-helper": "^1.2.3",
     "@fortawesome/fontawesome-svg-core": "^7.0.1",
     "@fortawesome/free-solid-svg-icons": "^7.0.1",
     "@fortawesome/react-fontawesome": "^3.0.2",
     "maplibre-gl": "^5.7.1",
     "next": "15.5.2",
+    "next-transpile-modules": "^10.0.1",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

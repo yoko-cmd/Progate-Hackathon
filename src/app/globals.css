@@ -117,3 +117,5 @@ body{
   object-fit: contain;
   display: block;
 }
+
+@import "maplibre-gl/dist/maplibre-gl.css";
