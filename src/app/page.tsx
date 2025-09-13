@@ -1,103 +1,219 @@
-import Image from "next/image";
+// page.tsx (修正後)
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+'use client';
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+import React, { useEffect, useRef, useState } from 'react';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+
+// Font Awesomeのインポートを追加
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faIndustry } from '@fortawesome/free-solid-svg-icons';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+
+// ピンデータを管理するためのインターフェース
+interface MarkerData {
+  id: string;
+  coordinates: [number, number];
+  timestamp: Date;
+  markerInstance: maplibregl.Marker;
+}
+
+const ClickToAddPinMap: React.FC = () => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  const [markers, setMarkers] = useState<MarkerData[]>([]);
+  const [isAddingMode, setIsAddingMode] = useState(true);
+
+  useEffect(() => {
+    (window as any).removeMarker = (markerId: string) => {
+      setMarkers(prev => {
+        const markerToRemove = prev.find(marker => marker.id === markerId);
+        if (markerToRemove) {
+          markerToRemove.markerInstance.remove();
+        }
+        return prev.filter(marker => marker.id !== markerId);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (map.current) return;
+
+    const apiKey = process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY!;
+    const region = "us-east-1";
+    const style = "Standard";
+    const colorScheme = "Light";
+    const styleUrl = `https://maps.geo.${region}.amazonaws.com/v2/styles/${style}/descriptor?key=${apiKey}&color-scheme=${colorScheme}`;
+
+
+    if (mapContainer.current) {
+      map.current = new maplibregl.Map({
+        container: mapContainer.current,
+        style: styleUrl,
+        center: [138.2529, 36.2048],
+        zoom: 5
+      });
+
+      map.current.on('load', () => {
+        if (!map.current) return;
+
+        // GeoJSONのフィーチャをループ処理してマーカーを追加
+        geojson.features.forEach((feature, index) => {
+          // Font AwesomeアイコンをHTML文字列に変換
+          const iconHtml = renderToStaticMarkup(
+            <FontAwesomeIcon
+              icon={faIndustry}
+              style={{ color: '#fb6aaeff', fontSize: '30px' }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          );
+
+          // HTML要素を作成し、アイコンを挿入
+          const el = document.createElement('div');
+          el.innerHTML = iconHtml;
+
+          // マーカーのスタイルを調整
+          el.style.transform = 'translate(-50%, -100%)'; // ピンの底辺を座標に合わせる
+
+          const message = feature.properties?.test || `ピン #${index + 1}`;
+          el.addEventListener('click', () => {
+            window.alert(`GeoJSONピン: ${message}`);
+          });
+
+          new maplibregl.Marker({ element: el })
+            .setLngLat(feature.geometry.coordinates as [number, number])
+            .addTo(map.current!);
+        });
+
+        // 既存のクリックイベントを追加
+        map.current.on('click', (e) => {
+          if (!isAddingMode) return;
+
+          const { lng, lat } = e.lngLat;
+          const newMarker: MarkerData = {
+            id: Date.now().toString(),
+            coordinates: [lng, lat],
+            timestamp: new Date(),
+            markerInstance: null as any,
+          };
+
+          const popupHtml = `
+                        <div class="p-2">
+                            <h3 class="font-bold text-sm">新しいピン</h3>
+                            <p class="text-xs text-gray-600">
+                                座標: ${lat.toFixed(4)}, ${lng.toFixed(4)}
+                            </p>
+                            <p class="text-xs text-gray-600">
+                                追加時刻: ${newMarker.timestamp.toLocaleTimeString()}
+                            </p>
+                            <button
+                                onclick="window.removeMarker('${newMarker.id}')"
+                                class="mt-2 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                            >
+                                削除
+                            </button>
+                        </div>
+                    `;
+
+          const newMarkerInstance = new maplibregl.Marker({
+            color: '#FF5722',
+            draggable: false
+          })
+            .setLngLat([lng, lat])
+            .setPopup(new maplibregl.Popup().setHTML(popupHtml))
+            .addTo(map.current!);
+
+          newMarker.markerInstance = newMarkerInstance;
+          setMarkers(prev => [...prev, newMarker]);
+
+          console.log('新しいピンが追加されました:', newMarker);
+        });
+
+        map.current.on('mouseenter', () => {
+          if (isAddingMode) {
+            map.current!.getCanvas().style.cursor = 'crosshair';
+          }
+        });
+
+        map.current.on('mouseleave', () => {
+          map.current!.getCanvas().style.cursor = '';
+        });
+      });
+    }
+
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, [isAddingMode]);
+
+  const clearAllMarkers = () => {
+    markers.forEach(marker => marker.markerInstance.remove());
+    setMarkers([]);
+  };
+
+  return (
+    <div className="w-full h-screen relative">
+      <div ref={mapContainer} className="w-full h-full" />
+
+      {/* コントロールパネル */}
+      <div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg">
+        <h3 className="font-bold text-lg mb-3">ピン追加モード</h3>
+        <div className="mb-3">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={isAddingMode}
+              onChange={(e) => setIsAddingMode(e.target.checked)}
+              className="mr-2"
+            />
+            <span className="text-sm">クリックでピン追加</span>
+          </label>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <div className="mb-3">
+          <p className="text-sm text-gray-600">
+            追加されたピン: {markers.length}個
+          </p>
+        </div>
+        <button
+          onClick={clearAllMarkers}
+          className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          全てのピンを削除
+        </button>
+        {isAddingMode && (
+          <p className="text-xs text-blue-600 mt-2">
+            💡 地図をクリックしてピンを追加
+          </p>
+        )}
+      </div>
+
+      {/* マーカーリスト */}
+      <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg max-w-xs max-h-96 overflow-y-auto">
+        <h4 className="font-bold text-sm mb-2">追加されたピン一覧</h4>
+        {markers.length === 0 ? (
+          <p className="text-xs text-gray-500">まだピンがありません</p>
+        ) : (
+          <div className="space-y-2">
+            {markers.map((marker, index) => (
+              <div key={marker.id} className="p-2 bg-gray-50 rounded text-xs">
+                <div className="font-semibold">ピン #{index + 1}</div>
+                <div className="text-gray-600">
+                  {marker.coordinates[1].toFixed(4)}, {marker.coordinates[0].toFixed(4)}
+                </div>
+                <div className="text-gray-500">
+                  {marker.timestamp.toLocaleTimeString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default ClickToAddPinMap;
