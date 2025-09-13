@@ -19,6 +19,7 @@ const ClickToAddPinMap: React.FC = () => {
     const map = useRef<maplibregl.Map | null>(null);
 
     const Game = useGame();
+    const { pushStack } = Game.delivery;
 
     const storageBuildings = storagePoint.getStorages();
 
@@ -53,7 +54,7 @@ const ClickToAddPinMap: React.FC = () => {
                     el.style.transform = "translate(-50%, -100%)"; // ピンの底辺を座標に合わせる
 
                     el.addEventListener("click", () => {
-                        Game.delivery.pushStack(storage);
+                        pushStack(storage);
                     });
 
                     new maplibregl.Marker({ element: el }).setLngLat([storage.coords.longitude, storage.coords.latitude]).addTo(map.current!);
@@ -67,7 +68,7 @@ const ClickToAddPinMap: React.FC = () => {
             //     map.current = null;
             // }
         };
-    }, [storageBuildings, Game]);
+    }, [storageBuildings, pushStack]); // pushStackを依存配列に追加
 
     useEffect(() => {
         if (!map.current) return;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // page.tsx (修正後)
 
 "use client";
@@ -72,9 +73,9 @@ const ClickToAddPinMap: React.FC = () => {
                     // マーカーのスタイルを調整
                     el.style.transform = "translate(-50%, -100%)"; // ピンの底辺を座標に合わせる
 
-                    const message = feature.properties?.test || `ピン #${index + 1}`;
+                    // const message = feature.properties?.test || `ピン #${index + 1}`;
                     el.addEventListener("click", () => {
-                        window.alert(`GeoJSONピン: ${message}`);
+                        // window.alert(`GeoJSONピン: ${message}`);
                     });
 
                     new maplibregl.Marker({ element: el }).setLngLat(feature.geometry.coordinates as [number, number]).addTo(map.current!);
