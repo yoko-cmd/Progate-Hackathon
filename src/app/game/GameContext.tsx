@@ -108,6 +108,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         // 最新のスタックを取得
         setDeliveryStack((currentStack) => {
+            // 同じBuildingが既に存在する場合は無視
+            if (currentStack.some((existingBuilding) => existingBuilding.id === building.id)) {
+                return currentStack;
+            }
             // 非同期処理を別途実行
             (async () => {
                 // 距離を計算（非同期処理を待つ）
