@@ -65,18 +65,20 @@ async function calculateDistance(from: { latitude: number; longitude: number }, 
 }
 
 function calculateGasolineConsumption(method: DeliveryMethod, distance: number): number {
-    const nenpi = 7.5; //燃費(km/L)
-    return distance * nenpi; //ガソリン消費量計算(L)
+    switch (method) {
+        case "ship":
+            return distance * 0.015; //燃費(L/t/km)
+        case "air":
+            return distance * 0.2; //仮の燃費計算(L/km)
+        case "truck":
+            return distance * 7.5; //燃費(km/L)
+        default:
+            return 0;
+    }
 }
-
 
 function calculateCO2Emission(gasolineConsumption: number): number {
     return gasolineConsumption * 2.31; //仮のCO2排出量計算(kg)
-}
-
-function boatCalculateGasolineConsumption(method: DeliveryMethod,distance: number): number{
-    const nenpi = 0.015; //燃費(L/t/km)
-    return distance * nenpi; //ガソリン消費量計算(L)
 }
 
 interface GameContextType {
