@@ -69,8 +69,14 @@ function calculateGasolineConsumption(method: DeliveryMethod, distance: number):
     return distance * nenpi; //ガソリン消費量計算(L)
 }
 
+
 function calculateCO2Emission(gasolineConsumption: number): number {
     return gasolineConsumption * 2.31; //仮のCO2排出量計算(kg)
+}
+
+function boatCalculateGasolineConsumption(method: DeliveryMethod,distance: number): number{
+    const nenpi = 0.015; //燃費(L/t/km)
+    return distance * nenpi; //ガソリン消費量計算(L)
 }
 
 interface GameContextType {
