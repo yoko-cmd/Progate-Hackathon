@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 type GeoCoords = {
     latitude: number; // 緯度
@@ -40,8 +40,8 @@ function calculateDistance(from: GeoCoords, to: GeoCoords): number {
 }
 
 function calculateGasolineConsumption(method: DeliveryMethod, distance: number): number {
-    const nenpi = 7.5;//燃費(km/L)
-    return distance * nenpi//ガソリン消費量計算(L)
+    const nenpi = 7.5; //燃費(km/L)
+    return distance * nenpi; //ガソリン消費量計算(L)
 }
 
 function calculateCO2Emission(gasolineConsumption: number): number {
@@ -57,35 +57,38 @@ export const useGame = () => {
         co2Emission: 0,
     });
 
-    const pushDeliveryStack = (building: Building) => {
-        let method: DeliveryMethod;
-        if (building.type === "port") {
-            method = "ship";
-        } else {
-            method = "truck";
-        }
+    const pushDeliveryStack = useCallback(
+        (building: Building) => {
+            let method: DeliveryMethod;
+            if (building.type === "port") {
+                method = "ship";
+            } else {
+                method = "truck";
+            }
 
-        const distance = deliveryStack.length === 0 ? 0 : calculateDistance(deliveryStack[deliveryStack.length - 1].coords, building.coords);
-        const gasolineConsumption = calculateGasolineConsumption(method, distance);
-        const co2Emission = calculateCO2Emission(gasolineConsumption);
-        setDeliveryStack((prevStack) => [...prevStack, building]);
-        setDeliveryRouteStack((prevStack) => [
-            ...prevStack,
-            {
-                method,
-                distance,
-                gasolineConsumption,
-                co2Emission,
-            },
-        ]);
-        setDeliveryResult((prevResult) => ({
-            distance: prevResult.distance + distance,
-            gasolineConsumption: prevResult.gasolineConsumption + gasolineConsumption,
-            co2Emission: prevResult.co2Emission + co2Emission,
-        }));
-    };
+            const distance = deliveryStack.length === 0 ? 0 : calculateDistance(deliveryStack[deliveryStack.length - 1].coords, building.coords);
+            const gasolineConsumption = calculateGasolineConsumption(method, distance);
+            const co2Emission = calculateCO2Emission(gasolineConsumption);
+            setDeliveryStack((prevStack) => [...prevStack, building]);
+            setDeliveryRouteStack((prevStack) => [
+                ...prevStack,
+                {
+                    method,
+                    distance,
+                    gasolineConsumption,
+                    co2Emission,
+                },
+            ]);
+            setDeliveryResult((prevResult) => ({
+                distance: prevResult.distance + distance,
+                gasolineConsumption: prevResult.gasolineConsumption + gasolineConsumption,
+                co2Emission: prevResult.co2Emission + co2Emission,
+            }));
+        },
+        [deliveryStack]
+    );
 
-    const initDeliveryStack = () => {
+    const initDeliveryStack = useCallback(() => {
         setDeliveryStack([]);
         setDeliveryRouteStack([]);
         setDeliveryResult({
@@ -93,7 +96,7 @@ export const useGame = () => {
             gasolineConsumption: 0,
             co2Emission: 0,
         });
-    };
+    }, []);
 
     const Game = {
         delivery: {

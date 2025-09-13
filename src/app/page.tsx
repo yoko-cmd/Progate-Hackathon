@@ -62,7 +62,7 @@ const ClickToAddPinMap: React.FC = () => {
                 if (!map.current) return;
 
                 // GeoJSONのフィーチャをループ処理してマーカーを追加
-                geojson.features.forEach((feature, index) => {
+                geojson.features.forEach((feature) => {
                     // Font AwesomeアイコンをHTML文字列に変換
                     const iconHtml = renderToStaticMarkup(<FontAwesomeIcon icon={faIndustry} style={{ color: "#fb6aaeff", fontSize: "30px" }} />);
 
