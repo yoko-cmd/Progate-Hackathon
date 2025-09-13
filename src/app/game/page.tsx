@@ -18,7 +18,7 @@ const ClickToAddPinMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
 
-    const { deliveryStack, deliveryResult, pushDeliveryStack } = useGameContext();
+    const { deliveryStack, deliveryResult, pushDeliveryStack, currentYear, availableYears, setCurrentYear } = useGameContext();
 
     const storageBuildings = storagePoint.getStorages();
     const portBuildings = portPoint.getPorts();
@@ -158,6 +158,19 @@ const ClickToAddPinMap: React.FC = () => {
 
     return (
         <div className="w-full h-screen relative">
+            {/* 左上の年度選択UI */}
+            <div className="absolute top-4 left-4 bg-white bg-opacity-90 rounded-lg shadow-md p-4 z-10" style={{ minWidth: "200px" }}>
+                <div className="font-bold mb-2">年度選択</div>
+                <select value={currentYear} onChange={(e) => setCurrentYear(e.target.value)} className="w-full p-2 border border-gray-300 rounded">
+                    {availableYears.map((year) => (
+                        <option key={year} value={year}>
+                            {year}年
+                        </option>
+                    ))}
+                </select>
+                <div className="text-sm text-gray-600 mt-1">現在: {currentYear}年のルートデータ</div>
+            </div>
+
             {/* 右上の情報表示UIをここに追加 */}
             <div className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-lg shadow-md p-4 z-10" style={{ minWidth: "200px" }}>
                 <div className="font-bold mb-2">ルート情報</div>
