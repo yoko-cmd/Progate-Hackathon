@@ -10,13 +10,15 @@ import { faIndustry } from "@fortawesome/free-solid-svg-icons";
 import { renderToStaticMarkup } from "react-dom/server";
 
 // GeoJSONデータのインポート
-import storagePoint from "./point.json";
+import storagePoint from "./storage.json";
+import { useGame } from "./game";
 
 const ClickToAddPinMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
 
     const [relayMarkers, setRelayMarkers] = useState<{ lat: number; lng: number }[]>([]);
+    const Game = useGame();
 
     useEffect(() => {
         if (map.current) return;
@@ -134,20 +136,23 @@ const ClickToAddPinMap: React.FC = () => {
     return (
         <div className="w-full h-screen relative">
             {/* 右上の情報表示UIをここに追加 */}
-            <div
-                className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-lg shadow-md p-4 z-10"
-                style={{ minWidth: "200px" }}
-            >
+            <div className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-lg shadow-md p-4 z-10" style={{ minWidth: "200px" }}>
                 <div className="font-bold mb-2">ルート情報</div>
                 <div className="flex flex-col gap-1 text-sm">
-                    <div>距離：<span className="font-semibold">-- km</span></div>
-                    <div>ガソリン消費量：<span className="font-semibold">-- L</span></div>
-                    <div>CO₂排出量：<span className="font-semibold">-- kg</span></div>
+                    <div>
+                        距離：<span className="font-semibold">-- km</span>
+                    </div>
+                    <div>
+                        ガソリン消費量：<span className="font-semibold">-- L</span>
+                    </div>
+                    <div>
+                        CO₂排出量：<span className="font-semibold">-- kg</span>
+                    </div>
                 </div>
             </div>
             <div ref={mapContainer} className="w-full h-full" />
         </div>
     );
-    };
+};
 
 export default ClickToAddPinMap;
