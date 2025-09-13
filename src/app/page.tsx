@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // page.tsx (修正後)
 
 "use client";
@@ -146,7 +147,7 @@ const ClickToAddPinMap: React.FC = () => {
         if (!map.current) return;
 
         // GeoJSON のマーカー追加
-        geojson.features.forEach((feature, index) => {
+        geojson.features.forEach((feature) => {
           const iconHtml = renderToStaticMarkup(
             <FontAwesomeIcon icon={faIndustry} style={{ color: "#fb6aaeff", fontSize: "30px" }} />
           );
@@ -154,9 +155,9 @@ const ClickToAddPinMap: React.FC = () => {
           el.innerHTML = iconHtml;
           el.style.transform = "translate(-50%, -100%)";
 
-          const message = feature.properties?.name || `ピン #${index + 1}`;
+          // const message = feature.properties?.name || `ピン #${index + 1}`;
           el.addEventListener("click", () => {
-            window.alert(`GeoJSONピン: ${message}`);
+            // window.alert(`GeoJSONピン: ${message}`);
           });
 
           new maplibregl.Marker({ element: el })

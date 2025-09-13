@@ -10,8 +10,7 @@ import { faIndustry } from "@fortawesome/free-solid-svg-icons";
 import { renderToStaticMarkup } from "react-dom/server";
 
 // GeoJSONデータのインポート
-import { useGame } from "./game";
-
+import { useGameContext } from "./GameContext";
 import { storagePoint } from "./storagePoint";
 import { portPoint } from "./portPoint";
 
@@ -20,7 +19,7 @@ const ClickToAddPinMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
 
-    const Game = useGame();
+    const { deliveryStack, deliveryResult, pushDeliveryStack } = useGameContext();
 
     const storageBuildings = storagePoint.getStorages();
     const portBuildings = portPoint.getPorts();
@@ -58,7 +57,7 @@ const ClickToAddPinMap: React.FC = () => {
                     el.style.transform = "translate(-50%, -100%)"; // ピンの底辺を座標に合わせる
 
                     el.addEventListener("click", () => {
-                        Game.delivery.pushStack(storage);
+                        pushDeliveryStack(storage);
                     });
 
                     new maplibregl.Marker({ element: el }).setLngLat([storage.coords.longitude, storage.coords.latitude]).addTo(map.current!);
@@ -110,7 +109,7 @@ const ClickToAddPinMap: React.FC = () => {
             //     map.current = null;
             // }
         };
-    }, [storageBuildings, Game]);
+    }, [storageBuildings, pushDeliveryStack]); // pushDeliveryStackを依存配列に追加
 
     useEffect(() => {
         if (!map.current) return;
@@ -118,7 +117,7 @@ const ClickToAddPinMap: React.FC = () => {
         // 既存の中継地点マーカーをすべて削除
         document.querySelectorAll(".relay-marker").forEach((el) => el.remove());
         // 中継地点マーカーを追加
-        Game.delivery.stack.forEach((stack) => {
+        deliveryStack.forEach((stack) => {
             const el = document.createElement("div");
             el.className = "relay-marker";
             el.style.backgroundColor = "#ff0000";
@@ -140,8 +139,8 @@ const ClickToAddPinMap: React.FC = () => {
         if (map.current.getSource(lineId)) {
             map.current.removeSource(lineId);
         }
-        if (Game.delivery.stack.length >= 2) {
-            const lineCoordinates = Game.delivery.stack.map((stack) => [stack.coords.longitude, stack.coords.latitude]);
+        if (deliveryStack.length >= 2) {
+            const lineCoordinates = deliveryStack.map((stack) => [stack.coords.longitude, stack.coords.latitude]);
             map.current.addSource(lineId, {
                 type: "geojson",
                 data: {
@@ -174,7 +173,7 @@ const ClickToAddPinMap: React.FC = () => {
             // クリーンアップで中継地点マーカーを削除
             document.querySelectorAll(".relay-marker").forEach((el) => el.remove());
         };
-    }, [Game.delivery.stack]);
+    }, [deliveryStack]);
 
     return (
         <div className="w-full h-screen relative">
@@ -183,13 +182,13 @@ const ClickToAddPinMap: React.FC = () => {
                 <div className="font-bold mb-2">ルート情報</div>
                 <div className="flex flex-col gap-1 text-sm">
                     <div>
-                        距離：<span className="font-semibold">{Game.delivery.result.distance} km</span>
+                        距離：<span className="font-semibold">{deliveryResult.distance} km</span>
                     </div>
                     <div>
-                        ガソリン消費量：<span className="font-semibold">{Game.delivery.result.gasolineConsumption} L</span>
+                        ガソリン消費量：<span className="font-semibold">{deliveryResult.gasolineConsumption} L</span>
                     </div>
                     <div>
-                        CO₂排出量：<span className="font-semibold">{Game.delivery.result.co2Emission} kg</span>
+                        CO₂排出量：<span className="font-semibold">{deliveryResult.co2Emission} kg</span>
                     </div>
                 </div>
             </div>
