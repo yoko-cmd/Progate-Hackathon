@@ -1,7 +1,41 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { Building, DeliveryMethod, DeliveryRoute, DeliveryResult } from "./game";
+
+type GeoCoords = {
+    latitude: number; // 緯度
+    longitude: number; // 経度
+};
+
+export interface Building {
+    type: "port" | "storage";
+    id: number;
+    name: string;
+    coords: GeoCoords;
+}
+
+export type PortBuilding = Building & {
+    type: "port";
+};
+
+export type StorageBuilding = Building & {
+    type: "storage";
+};
+
+export type DeliveryMethod = "truck" | "ship" | "air";
+
+export type DeliveryRoute = {
+    method: DeliveryMethod;
+    distance: number; // km
+    gasolineConsumption: number; // L
+    co2Emission: number; // kg
+};
+
+export type DeliveryResult = {
+    distance: number; // km
+    gasolineConsumption: number; // ガソリン消費量 (L)
+    co2Emission: number; // CO2排出量 (kg)
+};
 
 function calculateDistance(from: { latitude: number; longitude: number }, to: { latitude: number; longitude: number }): number {
     return 100; // 仮の距離計算

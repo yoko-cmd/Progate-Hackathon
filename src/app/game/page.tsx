@@ -14,7 +14,6 @@ import { useGameContext } from "./GameContext";
 import { storagePoint } from "./storagePoint";
 import { portPoint } from "./portPoint";
 
-
 const ClickToAddPinMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
@@ -24,7 +23,7 @@ const ClickToAddPinMap: React.FC = () => {
     const storageBuildings = storagePoint.getStorages();
     const portBuildings = portPoint.getPorts();
 
-
+    const Game = useGameContext();
 
     useEffect(() => {
         if (map.current) return;
@@ -65,18 +64,14 @@ const ClickToAddPinMap: React.FC = () => {
 
                 // 倉庫マーカー
                 storageBuildings.forEach((storage) => {
-                    const iconHtml = renderToStaticMarkup(
-                        <FontAwesomeIcon icon={faIndustry} style={{ color: "#fb6aaeff", fontSize: "30px" }} />
-                    );
+                    const iconHtml = renderToStaticMarkup(<FontAwesomeIcon icon={faIndustry} style={{ color: "#fb6aaeff", fontSize: "30px" }} />);
                     const el = document.createElement("div");
                     el.innerHTML = iconHtml;
                     el.style.transform = "translate(-50%, -100%)";
                     el.addEventListener("click", () => {
-                        Game.delivery.pushStack(storage);
+                        Game.pushDeliveryStack(storage);
                     });
-                    new maplibregl.Marker({ element: el })
-                        .setLngLat([storage.coords.longitude, storage.coords.latitude])
-                        .addTo(map.current!);
+                    new maplibregl.Marker({ element: el }).setLngLat([storage.coords.longitude, storage.coords.latitude]).addTo(map.current!);
                 });
 
                 // 港マーカー
@@ -92,14 +87,11 @@ const ClickToAddPinMap: React.FC = () => {
                     el.style.transform = "translate(-50%, -50%)";
 
                     el.addEventListener("click", () => {
-                        Game.delivery.pushStack(port);
+                        Game.pushDeliveryStack(port);
                     });
 
-                    new maplibregl.Marker({ element: el })
-                        .setLngLat([port.coords.longitude, port.coords.latitude])
-                        .addTo(map.current!);
+                    new maplibregl.Marker({ element: el }).setLngLat([port.coords.longitude, port.coords.latitude]).addTo(map.current!);
                 });
-
             });
         }
 
@@ -109,7 +101,7 @@ const ClickToAddPinMap: React.FC = () => {
             //     map.current = null;
             // }
         };
-    }, [storageBuildings, pushDeliveryStack]); // pushDeliveryStackを依存配列に追加
+    }, [storageBuildings, pushDeliveryStack, portBuildings, Game]); // pushDeliveryStackを依存配列に追加
 
     useEffect(() => {
         if (!map.current) return;
