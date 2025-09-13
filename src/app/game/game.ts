@@ -64,10 +64,35 @@ export const useGame = () => {
         } else {
             method = "truck";
         }
+
+        const distance = deliveryStack.length === 0 ? 0 : calculateDistance(deliveryStack[deliveryStack.length - 1].coords, building.coords);
+        const gasolineConsumption = calculateGasolineConsumption(method, distance);
+        const co2Emission = calculateCO2Emission(gasolineConsumption);
+        setDeliveryStack((prevStack) => [...prevStack, building]);
+        setDeliveryRouteStack((prevStack) => [
+            ...prevStack,
+            {
+                method,
+                distance,
+                gasolineConsumption,
+                co2Emission,
+            },
+        ]);
+        setDeliveryResult((prevResult) => ({
+            distance: prevResult.distance + distance,
+            gasolineConsumption: prevResult.gasolineConsumption + gasolineConsumption,
+            co2Emission: prevResult.co2Emission + co2Emission,
+        }));
     };
 
     const initDeliveryStack = () => {
         setDeliveryStack([]);
+        setDeliveryRouteStack([]);
+        setDeliveryResult({
+            distance: 0,
+            gasolineConsumption: 0,
+            co2Emission: 0,
+        });
     };
 
     const Game = {
