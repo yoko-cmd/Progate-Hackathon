@@ -8,13 +8,14 @@ const DiceComponent: React.FC = () => {
 
     const canCompleteDelivery = () => {
         if (!currentQuest) return false;
-        
+
         // 配送スタックが空の場合は開始地点にいることを意味し、
         // スタックに要素がある場合は最後の要素が現在地
-        const isAtDestination = deliveryStack.length === 0 
-            ? currentQuest.from.id === currentQuest.to.id  // 開始地点と目的地が同じ場合
-            : deliveryStack[deliveryStack.length - 1].id === currentQuest.to.id;
-            
+        const isAtDestination =
+            deliveryStack.length === 0
+                ? currentQuest.from.id === currentQuest.to.id // 開始地点と目的地が同じ場合
+                : deliveryStack[deliveryStack.length - 1].id === currentQuest.to.id;
+
         return isAtDestination;
     };
 

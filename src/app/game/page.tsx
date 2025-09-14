@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 // Font Awesomeのインポートを追加
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faIndustry } from "@fortawesome/free-solid-svg-icons";
+import { faAnchor, faIndustry } from "@fortawesome/free-solid-svg-icons";
 import { renderToStaticMarkup } from "react-dom/server";
 
 // GeoJSONデータのインポート
@@ -72,13 +72,14 @@ const ClickToAddPinMap: React.FC = () => {
         };
     }, []); // 依存配列は空にして、マップ初期化は一度だけ行う
 
-    // マーカーを管理する別のuseEffect
+    // マーカーを管理する別のuseEffect（初期作成用）
     useEffect(() => {
         if (!map.current || !map.current.isStyleLoaded()) return;
 
-        // 既存のマーカーをすべて削除
-        document.querySelectorAll(".storage-marker").forEach((el) => el.remove());
-        document.querySelectorAll(".port-marker").forEach((el) => el.remove());
+        // 既存のマーカーがある場合は何もしない（重複作成を防ぐ）
+        if (document.querySelector(".storage-marker") || document.querySelector(".port-marker")) {
+            return;
+        }
 
         // 倉庫マーカー
         storageBuildings.forEach((storage) => {
@@ -112,21 +113,22 @@ const ClickToAddPinMap: React.FC = () => {
 
         // 港マーカー
         portBuildings.forEach((port) => {
+            const iconHtml = renderToStaticMarkup(<FontAwesomeIcon icon={faAnchor} style={{ color: "#0000ff", fontSize: "30px" }} />);
+
+            // HTML要素を作成し、アイコンを挿入
             const el = document.createElement("div");
             el.className = "port-marker";
-            el.style.backgroundColor = "#0000ff"; // 青丸などで区別
-            el.style.width = "16px";
-            el.style.height = "16px";
-            el.style.borderRadius = "50%";
-            el.style.border = "2px solid #ffffff";
-            el.style.boxSizing = "border-box";
-            el.style.transform = "translate(-50%, -50%)";
+            el.innerHTML = iconHtml;
+
+            // マーカーのスタイルを調整
+            el.style.transform = "translate(-50%, -100%)"; // ピンの底辺を座標に合わせる
             el.style.cursor = "pointer"; // カーソルをポインターに変更
 
-            // delivery フェーズ中はボーダーを明るくして選択可能であることを示す
+            // delivery フェーズ中は枠線を追加して選択可能であることを示す
             if (gamePhase === "delivery") {
-                el.style.border = "3px solid #ffff00";
-                el.style.boxShadow = "0 0 10px rgba(255, 255, 0, 0.5)";
+                el.style.filter = "drop-shadow(0 0 8px rgba(255, 255, 0, 0.8))";
+                el.style.outline = "2px solid #ffff00";
+                el.style.outlineOffset = "2px";
             }
 
             el.addEventListener("click", () => {
@@ -144,7 +146,9 @@ const ClickToAddPinMap: React.FC = () => {
             document.querySelectorAll(".storage-marker").forEach((el) => el.remove());
             document.querySelectorAll(".port-marker").forEach((el) => el.remove());
         };
-    }, [storageBuildings, pushDeliveryStack, portBuildings, gamePhase]); // pushDeliveryStackを依存配列に追加    // プレイヤーマーカーを表示するエフェクト
+    }, [storageBuildings, portBuildings, pushDeliveryStack, gamePhase]); // 必要な依存関係をすべて含める
+
+    // プレイヤーマーカーを表示するエフェクト
     useEffect(() => {
         if (!map.current || !isGameStarted || boardPositions.length === 0) return;
 
@@ -192,12 +196,12 @@ const ClickToAddPinMap: React.FC = () => {
 
         // 既存の中継地点マーカーをすべて削除
         document.querySelectorAll(".relay-marker").forEach((el) => el.remove());
-        
+
         // 現在地（開始地点）のマーカーを追加
         if (currentQuest && gamePhase === "delivery") {
             const startEl = document.createElement("div");
             startEl.className = "relay-marker start-marker";
-            startEl.style.backgroundColor = "#00ff00";  // 緑色で開始地点を表示
+            startEl.style.backgroundColor = "#00ff00"; // 緑色で開始地点を表示
             startEl.style.width = "16px";
             startEl.style.height = "16px";
             startEl.style.borderRadius = "50%";
@@ -205,11 +209,9 @@ const ClickToAddPinMap: React.FC = () => {
             startEl.style.boxSizing = "border-box";
             startEl.style.transform = "translate(-50%, -50%)";
 
-            new maplibregl.Marker({ element: startEl })
-                .setLngLat([currentQuest.from.coords.longitude, currentQuest.from.coords.latitude])
-                .addTo(map.current!);
+            new maplibregl.Marker({ element: startEl }).setLngLat([currentQuest.from.coords.longitude, currentQuest.from.coords.latitude]).addTo(map.current!);
         }
-        
+
         // 中継地点マーカーを追加
         deliveryStack.forEach((stack) => {
             const el = document.createElement("div");
@@ -233,12 +235,12 @@ const ClickToAddPinMap: React.FC = () => {
         if (map.current.getSource(lineId)) {
             map.current.removeSource(lineId);
         }
-        
+
         if (currentQuest && gamePhase === "delivery" && deliveryStack.length >= 1) {
             // 開始地点から配送スタックの全ての地点までの線を描画
             const lineCoordinates = [
                 [currentQuest.from.coords.longitude, currentQuest.from.coords.latitude],
-                ...deliveryStack.map((stack) => [stack.coords.longitude, stack.coords.latitude])
+                ...deliveryStack.map((stack) => [stack.coords.longitude, stack.coords.latitude]),
             ];
             map.current.addSource(lineId, {
                 type: "geojson",

@@ -230,108 +230,115 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, []);
 
     // ルートを再計算する関数
-    const recalculateRoutes = useCallback(async (stack: Building[]) => {
-        console.log("Recalculating routes for stack:", stack);
+    const recalculateRoutes = useCallback(
+        async (stack: Building[]): Promise<{ invalidRouteDetected?: boolean; validStackLength?: number } | void> => {
+            console.log("Recalculating routes for stack:", stack);
 
-        if (!currentQuest) {
-            console.log("No current quest, resetting routes");
-            setDeliveryRouteStack([]);
-            setDeliveryResult({
-                distance: 0,
-                gasolineConsumption: 0,
-                co2Emission: 0,
-            });
-            return;
-        }
-
-        // 配送スタックに開始地点を含めた完全なルートを作成
-        const completeRoute = [currentQuest.from, ...stack];
-        
-        if (completeRoute.length <= 1) {
-            console.log("Route is too short, resetting routes");
-            setDeliveryRouteStack([]);
-            setDeliveryResult({
-                distance: 0,
-                gasolineConsumption: 0,
-                co2Emission: 0,
-            });
-            return;
-        }
-
-        const newRoutes: DeliveryRoute[] = [];
-        let totalDistance = 0;
-        let totalGasolineConsumption = 0;
-        let totalCO2Emission = 0;
-
-        for (let i = 1; i < completeRoute.length; i++) {
-            const fromBuilding = completeRoute[i - 1];
-            const toBuilding = completeRoute[i];
-
-            let method: DeliveryMethod;
-            if (toBuilding.type === "port") {
-                method = "ship";
-            } else {
-                method = "truck";
+            if (!currentQuest) {
+                console.log("No current quest, resetting routes");
+                setDeliveryRouteStack([]);
+                setDeliveryResult({
+                    distance: 0,
+                    gasolineConsumption: 0,
+                    co2Emission: 0,
+                });
+                return;
             }
 
-            // 距離を計算
-            let distance: number;
-            if (method === "ship") {
-                distance = calculateStraightLineDistance(fromBuilding.coords, toBuilding.coords);
-            } else {
-                distance = await calculateDistance(fromBuilding.coords, toBuilding.coords);
+            // 配送スタックに開始地点を含めた完全なルートを作成
+            const completeRoute = [currentQuest.from, ...stack];
 
-                // calculateDistanceが0を返した場合（フェリーなど非車両交通手段が含まれる場合）
-                if (distance === 0) {
-                    console.warn(`Route from ${fromBuilding.name} to ${toBuilding.name} contains non-vehicle transport. Removing invalid route.`);
-                    // 無効なルートが含まれる場合、そこまでのスタックで計算を停止
-                    const validStack = stack.slice(0, i);
-                    setDeliveryStack(validStack);
-                    alert(
-                        `${fromBuilding.name}から${toBuilding.name}への陸路ルートには車両以外の交通手段（フェリーなど）が含まれているため、${toBuilding.name}以降のルートは削除されました。`
-                    );
+            if (completeRoute.length <= 1) {
+                console.log("Route is too short, resetting routes");
+                setDeliveryRouteStack([]);
+                setDeliveryResult({
+                    distance: 0,
+                    gasolineConsumption: 0,
+                    co2Emission: 0,
+                });
+                return;
+            }
 
-                    // 有効な部分までのルートで再計算
-                    if (validStack.length > 1) {
-                        recalculateRoutes(validStack);
-                    } else {
-                        setDeliveryRouteStack([]);
-                        setDeliveryResult({
-                            distance: 0,
-                            gasolineConsumption: 0,
-                            co2Emission: 0,
-                        });
-                    }
-                    return;
+            const newRoutes: DeliveryRoute[] = [];
+            let totalDistance = 0;
+            let totalGasolineConsumption = 0;
+            let totalCO2Emission = 0;
+
+            for (let i = 1; i < completeRoute.length; i++) {
+                const fromBuilding = completeRoute[i - 1];
+                const toBuilding = completeRoute[i];
+
+                let method: DeliveryMethod;
+                if (toBuilding.type === "port") {
+                    method = "ship";
+                } else {
+                    method = "truck";
                 }
+
+                // 距離を計算
+                let distance: number;
+                if (method === "ship") {
+                    distance = calculateStraightLineDistance(fromBuilding.coords, toBuilding.coords);
+                } else {
+                    distance = await calculateDistance(fromBuilding.coords, toBuilding.coords);
+
+                    // calculateDistanceが0を返した場合（フェリーなど非車両交通手段が含まれる場合）
+                    if (distance === 0) {
+                        console.warn(`Route from ${fromBuilding.name} to ${toBuilding.name} contains non-vehicle transport. Removing invalid route.`);
+                        // 無効なルートが含まれる場合、そこまでのスタックで計算を停止
+                        const validStack = stack.slice(0, i - 1); // i-1にして無効な建物自体を除外
+
+                        alert(
+                            `${fromBuilding.name}から${toBuilding.name}への陸路ルートには車両以外の交通手段（フェリーなど）が含まれているため、${toBuilding.name}以降のルートは削除されました。`
+                        );
+
+                        // 有効な部分のみでルートを再計算（再帰的な呼び出しを避けるため、直接値を設定）
+                        const validRoutes = newRoutes.slice(0, i - 1);
+                        const validTotalDistance = validRoutes.reduce((sum, route) => sum + route.distance, 0);
+                        const validTotalGasolineConsumption = validRoutes.reduce((sum, route) => sum + route.gasolineConsumption, 0);
+                        const validTotalCO2Emission = validRoutes.reduce((sum, route) => sum + route.co2Emission, 0);
+
+                        setDeliveryRouteStack(validRoutes);
+                        setDeliveryResult({
+                            distance: validTotalDistance,
+                            gasolineConsumption: validTotalGasolineConsumption,
+                            co2Emission: validTotalCO2Emission,
+                        });
+
+                        // deliveryStackの更新は呼び出し元で行う（状態更新の競合を避けるため）
+                        // setDeliveryStack(validStack);の代わりに、戻り値で通知
+                        return { invalidRouteDetected: true, validStackLength: validStack.length };
+                    }
+                }
+
+                const gasolineConsumption = calculateGasolineConsumption(method, distance);
+                const co2Emission = calculateCO2Emission(gasolineConsumption);
+
+                const route: DeliveryRoute = {
+                    method,
+                    distance,
+                    gasolineConsumption,
+                    co2Emission,
+                };
+
+                newRoutes.push(route);
+                totalDistance += distance;
+                totalGasolineConsumption += gasolineConsumption;
+                totalCO2Emission += co2Emission;
             }
 
-            const gasolineConsumption = calculateGasolineConsumption(method, distance);
-            const co2Emission = calculateCO2Emission(gasolineConsumption);
+            console.log("New routes calculated:", newRoutes);
+            console.log("Total results:", { totalDistance, totalGasolineConsumption, totalCO2Emission });
 
-            const route: DeliveryRoute = {
-                method,
-                distance,
-                gasolineConsumption,
-                co2Emission,
-            };
-
-            newRoutes.push(route);
-            totalDistance += distance;
-            totalGasolineConsumption += gasolineConsumption;
-            totalCO2Emission += co2Emission;
-        }
-
-        console.log("New routes calculated:", newRoutes);
-        console.log("Total results:", { totalDistance, totalGasolineConsumption, totalCO2Emission });
-
-        setDeliveryRouteStack(newRoutes);
-        setDeliveryResult({
-            distance: totalDistance,
-            gasolineConsumption: totalGasolineConsumption,
-            co2Emission: totalCO2Emission,
-        });
-    }, [currentQuest]);
+            setDeliveryRouteStack(newRoutes);
+            setDeliveryResult({
+                distance: totalDistance,
+                gasolineConsumption: totalGasolineConsumption,
+                co2Emission: totalCO2Emission,
+            });
+        },
+        [currentQuest]
+    );
 
     const removeFromDeliveryStack = useCallback(
         (building: Building) => {
@@ -344,7 +351,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 const newStack = currentStack.filter((_, index) => index !== buildingIndex);
 
                 // ルートとリザルトを再計算
-                recalculateRoutes(newStack);
+                setTimeout(async () => {
+                    await recalculateRoutes(newStack);
+                }, 0);
                 console.log("New stack after removal:", newStack);
 
                 return newStack;
@@ -398,7 +407,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 console.log("New stack after addition:", newStack);
 
                 // 追加後のルート再計算（非同期）
-                setTimeout(() => recalculateRoutes(newStack), 0);
+                setTimeout(async () => {
+                    const result = await recalculateRoutes(newStack);
+                    if (result?.invalidRouteDetected) {
+                        // 無効なルートが検出された場合、deliveryStackを有効な部分まで縮小
+                        setDeliveryStack((prevStack) => prevStack.slice(0, result.validStackLength));
+                    }
+                }, 0);
 
                 return newStack;
             });
@@ -503,9 +518,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 目的地に到達しているかチェック
         // 配送スタックが空の場合は開始地点にいることを意味し、
         // スタックに要素がある場合は最後の要素が現在地
-        const isAtDestination = deliveryStack.length === 0 
-            ? currentQuest.from.id === currentQuest.to.id  // 開始地点と目的地が同じ場合
-            : deliveryStack[deliveryStack.length - 1].id === currentQuest.to.id;
+        const isAtDestination =
+            deliveryStack.length === 0
+                ? currentQuest.from.id === currentQuest.to.id // 開始地点と目的地が同じ場合
+                : deliveryStack[deliveryStack.length - 1].id === currentQuest.to.id;
 
         if (!isAtDestination) {
             alert("目的地に到達していません！");
