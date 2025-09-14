@@ -267,6 +267,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                 let method: DeliveryMethod;
                 if (fromBuilding.type === "port" && toBuilding.type === "port") {
+                    console.warn(`Both buildings are ports: ${fromBuilding.name} to ${toBuilding.name}`);
                     method = "ship";
                 } else {
                     method = "truck";
