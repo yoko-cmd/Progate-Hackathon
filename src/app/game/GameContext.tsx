@@ -208,20 +208,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         initializeValidator();
     }, [currentYear]);
 
-    // ボードポジションを初期化
+    // ボードポジションを初期化（港を除外して倉庫のみ）
     useEffect(() => {
         const initializeBoardPositions = async () => {
-            // storagePointとportPointからボードポジションを作成
+            // storagePointからボードポジションを作成（港は除外）
             const { storagePoint } = await import("./storagePoint");
-            const { portPoint } = await import("./portPoint");
 
             const storages = storagePoint.getStorages();
-            const ports = portPoint.getPorts();
 
             // 日本を横断するようなルートを作成（北から南、または西から東）
-            const allBuildings = [...storages, ...ports];
             // 緯度でソート（北から南）
-            const sortedBuildings = allBuildings.sort((a, b) => b.coords.latitude - a.coords.latitude);
+            const sortedBuildings = storages.sort((a, b) => b.coords.latitude - a.coords.latitude);
 
             setBoardPositions(sortedBuildings);
         };
@@ -456,14 +453,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         [boardPositions.length]
     );
 
-    const startDeliveryEvent = useCallback(() => {
+    const startDeliveryEvent = useCallback((playerPosition?: number) => {
         if (boardPositions.length === 0) return;
 
-        const currentBuilding = boardPositions[currentPlayer.position];
+        // 引数で渡された位置を使用、なければ現在のプレイヤー位置を使用
+        const position = playerPosition !== undefined ? playerPosition : currentPlayer.position;
+        const currentBuilding = boardPositions[position];
         if (!currentBuilding) return;
 
         // ランダムに目的地を選択（現在地以外）
-        const availableDestinations = boardPositions.filter((_, index) => index !== currentPlayer.position);
+        const availableDestinations = boardPositions.filter((_, index) => index !== position);
         const randomDestination = availableDestinations[Math.floor(Math.random() * availableDestinations.length)];
 
         // 最適解を計算（簡単な直線距離ベース）
@@ -492,13 +491,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const value = Math.floor(Math.random() * 6) + 1;
         setDiceValue(value);
+        
+        // 新しい位置を計算
+        const newPosition = Math.min(currentPlayer.position + value, boardPositions.length - 1);
+        
+        // プレイヤーを移動
         movePlayer(value);
 
-        // 移動後、発送イベントを開始
+        // 移動後、新しい位置で配送イベントを開始
         setTimeout(() => {
-            startDeliveryEvent();
+            startDeliveryEvent(newPosition);
         }, 1000);
-    }, [gamePhase, movePlayer, startDeliveryEvent]);
+    }, [gamePhase, movePlayer, startDeliveryEvent, currentPlayer.position, boardPositions.length]);
 
     const nextPlayer = useCallback(() => {
         if (players.length === 0) return;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -23,6 +23,8 @@ import GameStartComponent from "./GameStartComponent";
 const ClickToAddPinMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
+    const markers = useRef<maplibregl.Marker[]>([]);
+    const createMarkersRef = useRef<(() => void) | null>(null);
 
     const {
         deliveryStack,
@@ -42,59 +44,31 @@ const ClickToAddPinMap: React.FC = () => {
     const storageBuildings = storagePoint.getStorages();
     const portBuildings = portPoint.getPorts();
 
-    useEffect(() => {
-        if (map.current) return;
+    // マーカーをクリアする関数
+    const clearAllMarkers = () => {
+        markers.current.forEach((marker) => marker.remove());
+        markers.current = [];
+        // DOM要素も削除
+        document.querySelectorAll(".storage-marker, .port-marker, .player-marker, .relay-marker").forEach((el) => el.remove());
+    };
 
-        const apiKey = process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY!;
-        const region = "us-east-1";
-        const style = "Standard";
-        const colorScheme = "Light";
-        const styleUrl = `https://maps.geo.${region}.amazonaws.com/v2/styles/${style}/descriptor?key=${apiKey}&color-scheme=${colorScheme}`;
-
-        if (mapContainer.current) {
-            map.current = new maplibregl.Map({
-                container: mapContainer.current,
-                style: styleUrl,
-                center: [138.2529, 36.2048],
-                zoom: 5,
-            });
-
-            map.current.on("load", () => {
-                // マップが読み込まれた後、マーカーは別のuseEffectで管理
-            });
-        }
-
-        return () => {
-            // if (map.current) {
-            //     map.current.remove();
-            //     map.current = null;
-            // }
-        };
-    }, []); // 依存配列は空にして、マップ初期化は一度だけ行う
-
-    // マーカーを管理する別のuseEffect（初期作成用）
-    useEffect(() => {
+    // すべてのマーカーを作成する関数
+    const createAllMarkers = useCallback(() => {
         if (!map.current || !map.current.isStyleLoaded()) return;
 
-        // 既存のマーカーがある場合は何もしない（重複作成を防ぐ）
-        if (document.querySelector(".storage-marker") || document.querySelector(".port-marker")) {
-            return;
-        }
+        // 既存のマーカーをクリア
+        clearAllMarkers();
 
-        // 倉庫マーカー
+        // 倉庫マーカーを作成
         storageBuildings.forEach((storage) => {
             const iconHtml = renderToStaticMarkup(<FontAwesomeIcon icon={faIndustry} style={{ color: "#fb6aaeff", fontSize: "30px" }} />);
 
-            // HTML要素を作成し、アイコンを挿入
             const el = document.createElement("div");
             el.className = "storage-marker";
             el.innerHTML = iconHtml;
+            el.style.transform = "translate(-50%, -100%)";
+            el.style.cursor = "pointer";
 
-            // マーカーのスタイルを調整
-            el.style.transform = "translate(-50%, -100%)"; // ピンの底辺を座標に合わせる
-            el.style.cursor = "pointer"; // カーソルをポインターに変更
-
-            // delivery フェーズ中は枠線を追加して選択可能であることを示す
             if (gamePhase === "delivery") {
                 el.style.filter = "drop-shadow(0 0 8px rgba(255, 255, 0, 0.8))";
                 el.style.outline = "2px solid #ffff00";
@@ -108,23 +82,20 @@ const ClickToAddPinMap: React.FC = () => {
                 }
             });
 
-            new maplibregl.Marker({ element: el }).setLngLat([storage.coords.longitude, storage.coords.latitude]).addTo(map.current!);
+            const marker = new maplibregl.Marker({ element: el }).setLngLat([storage.coords.longitude, storage.coords.latitude]).addTo(map.current!);
+            markers.current.push(marker);
         });
 
-        // 港マーカー
+        // 港マーカーを作成
         portBuildings.forEach((port) => {
             const iconHtml = renderToStaticMarkup(<FontAwesomeIcon icon={faAnchor} style={{ color: "#0000ff", fontSize: "30px" }} />);
 
-            // HTML要素を作成し、アイコンを挿入
             const el = document.createElement("div");
             el.className = "port-marker";
             el.innerHTML = iconHtml;
+            el.style.transform = "translate(-50%, -100%)";
+            el.style.cursor = "pointer";
 
-            // マーカーのスタイルを調整
-            el.style.transform = "translate(-50%, -100%)"; // ピンの底辺を座標に合わせる
-            el.style.cursor = "pointer"; // カーソルをポインターに変更
-
-            // delivery フェーズ中は枠線を追加して選択可能であることを示す
             if (gamePhase === "delivery") {
                 el.style.filter = "drop-shadow(0 0 8px rgba(255, 255, 0, 0.8))";
                 el.style.outline = "2px solid #ffff00";
@@ -138,70 +109,48 @@ const ClickToAddPinMap: React.FC = () => {
                 }
             });
 
-            new maplibregl.Marker({ element: el }).setLngLat([port.coords.longitude, port.coords.latitude]).addTo(map.current!);
+            const marker = new maplibregl.Marker({ element: el }).setLngLat([port.coords.longitude, port.coords.latitude]).addTo(map.current!);
+            markers.current.push(marker);
         });
 
-        return () => {
-            // クリーンアップで既存のマーカーを削除
-            document.querySelectorAll(".storage-marker").forEach((el) => el.remove());
-            document.querySelectorAll(".port-marker").forEach((el) => el.remove());
-        };
-    }, [storageBuildings, portBuildings, pushDeliveryStack, gamePhase]); // 必要な依存関係をすべて含める
+        // プレイヤーマーカーを作成
+        if (isGameStarted && boardPositions.length > 0) {
+            players.forEach((player, index) => {
+                const building = boardPositions[player.position];
+                if (!building) return;
 
-    // プレイヤーマーカーを表示するエフェクト
-    useEffect(() => {
-        if (!map.current || !isGameStarted || boardPositions.length === 0) return;
+                const el = document.createElement("div");
+                el.className = "player-marker";
+                el.style.backgroundColor = player.id === currentPlayer.id ? "#ff4444" : "#ffaa44";
+                el.style.width = "20px";
+                el.style.height = "20px";
+                el.style.borderRadius = "50%";
+                el.style.border = "3px solid #ffffff";
+                el.style.boxSizing = "border-box";
+                el.style.transform = "translate(-50%, -50%)";
+                el.style.position = "relative";
+                el.style.zIndex = "1000";
 
-        // 既存のプレイヤーマーカーをすべて削除
-        document.querySelectorAll(".player-marker").forEach((el) => el.remove());
+                el.innerHTML = `<div style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    color: white;
+                    font-size: 10px;
+                    font-weight: bold;
+                ">${index + 1}</div>`;
 
-        // 各プレイヤーの位置にマーカーを追加
-        players.forEach((player, index) => {
-            const building = boardPositions[player.position];
-            if (!building) return;
+                const marker = new maplibregl.Marker({ element: el }).setLngLat([building.coords.longitude, building.coords.latitude]).addTo(map.current!);
+                markers.current.push(marker);
+            });
+        }
 
-            const el = document.createElement("div");
-            el.className = "player-marker";
-            el.style.backgroundColor = player.id === currentPlayer.id ? "#ff4444" : "#ffaa44";
-            el.style.width = "20px";
-            el.style.height = "20px";
-            el.style.borderRadius = "50%";
-            el.style.border = "3px solid #ffffff";
-            el.style.boxSizing = "border-box";
-            el.style.transform = "translate(-50%, -50%)";
-            el.style.position = "relative";
-            el.style.zIndex = "1000";
-
-            // プレイヤー番号を表示
-            el.innerHTML = `<div style="
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: white;
-                font-size: 10px;
-                font-weight: bold;
-            ">${index + 1}</div>`;
-
-            new maplibregl.Marker({ element: el }).setLngLat([building.coords.longitude, building.coords.latitude]).addTo(map.current!);
-        });
-
-        return () => {
-            document.querySelectorAll(".player-marker").forEach((el) => el.remove());
-        };
-    }, [players, currentPlayer, boardPositions, isGameStarted]);
-
-    useEffect(() => {
-        if (!map.current) return;
-
-        // 既存の中継地点マーカーをすべて削除
-        document.querySelectorAll(".relay-marker").forEach((el) => el.remove());
-
-        // 現在地（開始地点）のマーカーを追加
+        // 中継地点マーカーを作成
         if (currentQuest && gamePhase === "delivery") {
             const startEl = document.createElement("div");
             startEl.className = "relay-marker start-marker";
-            startEl.style.backgroundColor = "#00ff00"; // 緑色で開始地点を表示
+            startEl.style.backgroundColor = "#00ff00";
             startEl.style.width = "16px";
             startEl.style.height = "16px";
             startEl.style.borderRadius = "50%";
@@ -209,10 +158,12 @@ const ClickToAddPinMap: React.FC = () => {
             startEl.style.boxSizing = "border-box";
             startEl.style.transform = "translate(-50%, -50%)";
 
-            new maplibregl.Marker({ element: startEl }).setLngLat([currentQuest.from.coords.longitude, currentQuest.from.coords.latitude]).addTo(map.current!);
+            const startMarker = new maplibregl.Marker({ element: startEl })
+                .setLngLat([currentQuest.from.coords.longitude, currentQuest.from.coords.latitude])
+                .addTo(map.current!);
+            markers.current.push(startMarker);
         }
 
-        // 中継地点マーカーを追加
         deliveryStack.forEach((stack) => {
             const el = document.createElement("div");
             el.className = "relay-marker";
@@ -224,10 +175,50 @@ const ClickToAddPinMap: React.FC = () => {
             el.style.boxSizing = "border-box";
             el.style.transform = "translate(-50%, -50%)";
 
-            new maplibregl.Marker({ element: el }).setLngLat([stack.coords.longitude, stack.coords.latitude]).addTo(map.current!);
+            const marker = new maplibregl.Marker({ element: el }).setLngLat([stack.coords.longitude, stack.coords.latitude]).addTo(map.current!);
+            markers.current.push(marker);
         });
 
-        // 配送ルートの線を描画（開始地点から）
+        // すごろくボードのルートを黒い線で描画
+        const boardRouteId = "board-route-line";
+        if (map.current.getLayer(boardRouteId)) {
+            map.current.removeLayer(boardRouteId);
+        }
+        if (map.current.getSource(boardRouteId)) {
+            map.current.removeSource(boardRouteId);
+        }
+
+        if (isGameStarted && boardPositions.length > 1) {
+            const boardLineCoordinates = boardPositions.map((building) => [building.coords.longitude, building.coords.latitude]);
+
+            map.current.addSource(boardRouteId, {
+                type: "geojson",
+                data: {
+                    type: "Feature",
+                    properties: {},
+                    geometry: {
+                        type: "LineString",
+                        coordinates: boardLineCoordinates,
+                    },
+                },
+            });
+            map.current.addLayer({
+                id: boardRouteId,
+                type: "line",
+                source: boardRouteId,
+                layout: {
+                    "line-join": "round",
+                    "line-cap": "round",
+                },
+                paint: {
+                    "line-color": "#000000",
+                    "line-width": 3,
+                    "line-opacity": 0.8,
+                },
+            });
+        }
+
+        // 配送ルートの線を描画
         const lineId = "relay-line";
         if (map.current.getLayer(lineId)) {
             map.current.removeLayer(lineId);
@@ -237,7 +228,6 @@ const ClickToAddPinMap: React.FC = () => {
         }
 
         if (currentQuest && gamePhase === "delivery" && deliveryStack.length >= 1) {
-            // 開始地点から配送スタックの全ての地点までの線を描画
             const lineCoordinates = [
                 [currentQuest.from.coords.longitude, currentQuest.from.coords.latitude],
                 ...deliveryStack.map((stack) => [stack.coords.longitude, stack.coords.latitude]),
@@ -268,13 +258,56 @@ const ClickToAddPinMap: React.FC = () => {
                 },
             });
         }
+    }, [storageBuildings, portBuildings, gamePhase, pushDeliveryStack, isGameStarted, players, currentPlayer, boardPositions, currentQuest, deliveryStack]);
 
-        // クリーンアップ関数を返す
+    // refに関数を保存
+    useEffect(() => {
+        createMarkersRef.current = createAllMarkers;
+    }, [createAllMarkers]);
+
+    useEffect(() => {
+        if (map.current) return;
+
+        const apiKey = process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY!;
+        const region = "us-east-1";
+        const style = "Standard";
+        const colorScheme = "Light";
+        const styleUrl = `https://maps.geo.${region}.amazonaws.com/v2/styles/${style}/descriptor?key=${apiKey}&color-scheme=${colorScheme}`;
+
+        if (mapContainer.current) {
+            map.current = new maplibregl.Map({
+                container: mapContainer.current,
+                style: styleUrl,
+                center: [138.2529, 36.2048],
+                zoom: 5,
+            });
+
+            // スタイルが完全に読み込まれた後にマーカーを作成
+            map.current.on("load", () => {
+                if (map.current?.isStyleLoaded() && createMarkersRef.current) {
+                    createMarkersRef.current();
+                }
+            });
+
+            // スタイルが再読み込みされた際にもマーカーを再作成
+            map.current.on("styledata", () => {
+                if (map.current?.isStyleLoaded() && createMarkersRef.current) {
+                    createMarkersRef.current();
+                }
+            });
+        }
+
         return () => {
-            // クリーンアップで中継地点マーカーを削除
-            document.querySelectorAll(".relay-marker").forEach((el) => el.remove());
+            clearAllMarkers();
         };
-    }, [deliveryStack, currentQuest, gamePhase]);
+    }, []); // 地図の初期化は一度だけ行う
+
+    // 地図が準備できた時とデータが変更された際にマーカーを更新
+    useEffect(() => {
+        if (map.current && map.current.isStyleLoaded()) {
+            createAllMarkers();
+        }
+    }, [createAllMarkers]);
 
     return (
         <div className="w-full h-screen relative">
