@@ -266,7 +266,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 const toBuilding = completeRoute[i];
 
                 let method: DeliveryMethod;
-                if (toBuilding.type === "port") {
+                if (fromBuilding.type === "port" && toBuilding.type === "port") {
                     method = "ship";
                 } else {
                     method = "truck";
