@@ -453,14 +453,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         [boardPositions.length]
     );
 
-    const startDeliveryEvent = useCallback(() => {
+    const startDeliveryEvent = useCallback((playerPosition?: number) => {
         if (boardPositions.length === 0) return;
 
-        const currentBuilding = boardPositions[currentPlayer.position];
+        // 引数で渡された位置を使用、なければ現在のプレイヤー位置を使用
+        const position = playerPosition !== undefined ? playerPosition : currentPlayer.position;
+        const currentBuilding = boardPositions[position];
         if (!currentBuilding) return;
 
         // ランダムに目的地を選択（現在地以外）
-        const availableDestinations = boardPositions.filter((_, index) => index !== currentPlayer.position);
+        const availableDestinations = boardPositions.filter((_, index) => index !== position);
         const randomDestination = availableDestinations[Math.floor(Math.random() * availableDestinations.length)];
 
         // 最適解を計算（簡単な直線距離ベース）
@@ -489,13 +491,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const value = Math.floor(Math.random() * 6) + 1;
         setDiceValue(value);
+        
+        // 新しい位置を計算
+        const newPosition = Math.min(currentPlayer.position + value, boardPositions.length - 1);
+        
+        // プレイヤーを移動
         movePlayer(value);
 
-        // 移動後、発送イベントを開始
+        // 移動後、新しい位置で配送イベントを開始
         setTimeout(() => {
-            startDeliveryEvent();
+            startDeliveryEvent(newPosition);
         }, 1000);
-    }, [gamePhase, movePlayer, startDeliveryEvent]);
+    }, [gamePhase, movePlayer, startDeliveryEvent, currentPlayer.position, boardPositions.length]);
 
     const nextPlayer = useCallback(() => {
         if (players.length === 0) return;
