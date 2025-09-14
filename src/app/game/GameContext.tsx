@@ -453,48 +453,51 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         [boardPositions.length]
     );
 
-    const startDeliveryEvent = useCallback((playerPosition?: number) => {
-        if (boardPositions.length === 0) return;
+    const startDeliveryEvent = useCallback(
+        (playerPosition?: number) => {
+            if (boardPositions.length === 0) return;
 
-        // 引数で渡された位置を使用、なければ現在のプレイヤー位置を使用
-        const position = playerPosition !== undefined ? playerPosition : currentPlayer.position;
-        const currentBuilding = boardPositions[position];
-        if (!currentBuilding) return;
+            // 引数で渡された位置を使用、なければ現在のプレイヤー位置を使用
+            const position = playerPosition !== undefined ? playerPosition : currentPlayer.position;
+            const currentBuilding = boardPositions[position];
+            if (!currentBuilding) return;
 
-        // ランダムに目的地を選択（現在地以外）
-        const availableDestinations = boardPositions.filter((_, index) => index !== position);
-        const randomDestination = availableDestinations[Math.floor(Math.random() * availableDestinations.length)];
+            // ランダムに目的地を選択（現在地以外）
+            const availableDestinations = boardPositions.filter((_, index) => index !== position);
+            const randomDestination = availableDestinations[Math.floor(Math.random() * availableDestinations.length)];
 
-        // 最適解を計算（簡単な直線距離ベース）
-        const distance = calculateStraightLineDistance(currentBuilding.coords, randomDestination.coords);
-        const optimalMethod: DeliveryMethod = randomDestination.type === "port" ? "ship" : "truck";
-        const optimalGasoline = calculateGasolineConsumption(optimalMethod, distance);
-        const optimalCO2 = calculateCO2Emission(optimalGasoline);
+            // 最適解を計算（簡単な直線距離ベース）
+            const distance = calculateStraightLineDistance(currentBuilding.coords, randomDestination.coords);
+            const optimalMethod: DeliveryMethod = randomDestination.type === "port" ? "ship" : "truck";
+            const optimalGasoline = calculateGasolineConsumption(optimalMethod, distance);
+            const optimalCO2 = calculateCO2Emission(optimalGasoline);
 
-        const quest: DeliveryQuest = {
-            id: Date.now(),
-            from: currentBuilding,
-            to: randomDestination,
-            optimalCO2: optimalCO2,
-            description: `${currentBuilding.name}から${randomDestination.name}に荷物を届けてください`,
-        };
+            const quest: DeliveryQuest = {
+                id: Date.now(),
+                from: currentBuilding,
+                to: randomDestination,
+                optimalCO2: optimalCO2,
+                description: `${currentBuilding.name}から${randomDestination.name}に荷物を届けてください`,
+            };
 
-        setCurrentQuest(quest);
-        setGamePhase("delivery");
+            setCurrentQuest(quest);
+            setGamePhase("delivery");
 
-        // 配送スタックを初期化（開始地点は含めない）
-        initDeliveryStack();
-    }, [boardPositions, currentPlayer.position, initDeliveryStack]);
+            // 配送スタックを初期化（開始地点は含めない）
+            initDeliveryStack();
+        },
+        [boardPositions, currentPlayer.position, initDeliveryStack]
+    );
 
     const rollDice = useCallback(() => {
         if (gamePhase !== "dice") return;
 
         const value = Math.floor(Math.random() * 6) + 1;
         setDiceValue(value);
-        
+
         // 新しい位置を計算
         const newPosition = Math.min(currentPlayer.position + value, boardPositions.length - 1);
-        
+
         // プレイヤーを移動
         movePlayer(value);
 

@@ -179,45 +179,6 @@ const ClickToAddPinMap: React.FC = () => {
             markers.current.push(marker);
         });
 
-        // すごろくボードのルートを黒い線で描画
-        const boardRouteId = "board-route-line";
-        if (map.current.getLayer(boardRouteId)) {
-            map.current.removeLayer(boardRouteId);
-        }
-        if (map.current.getSource(boardRouteId)) {
-            map.current.removeSource(boardRouteId);
-        }
-
-        if (isGameStarted && boardPositions.length > 1) {
-            const boardLineCoordinates = boardPositions.map((building) => [building.coords.longitude, building.coords.latitude]);
-
-            map.current.addSource(boardRouteId, {
-                type: "geojson",
-                data: {
-                    type: "Feature",
-                    properties: {},
-                    geometry: {
-                        type: "LineString",
-                        coordinates: boardLineCoordinates,
-                    },
-                },
-            });
-            map.current.addLayer({
-                id: boardRouteId,
-                type: "line",
-                source: boardRouteId,
-                layout: {
-                    "line-join": "round",
-                    "line-cap": "round",
-                },
-                paint: {
-                    "line-color": "#000000",
-                    "line-width": 3,
-                    "line-opacity": 0.8,
-                },
-            });
-        }
-
         // 配送ルートの線を描画
         const lineId = "relay-line";
         if (map.current.getLayer(lineId)) {
