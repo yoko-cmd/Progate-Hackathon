@@ -228,20 +228,6 @@
     {
       "type": "Feature",
       "properties": {
-        "port": "西郷"
-      },
-      "geometry": {
-        "coordinates": [
-          140.154,
-          37.14
-        ],
-        "type": "Point"
-      },
-      "id": 16
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "port": "広島"
       },
       "geometry": {
