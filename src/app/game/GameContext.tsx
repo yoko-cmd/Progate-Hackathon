@@ -41,6 +41,25 @@ export type DeliveryResult = {
     co2Emission: number; // CO2排出量 (kg)
 };
 
+// すごろく関連の型定義
+export type GamePhase = "dice" | "delivery" | "gameOver";
+
+export type Player = {
+    id: number;
+    name: string;
+    position: number; // すごろくボード上の位置
+    score: number; // スコア（CO2削減量などで計算）
+    totalCO2Saved: number; // 累計CO2削減量
+};
+
+export type DeliveryQuest = {
+    id: number;
+    from: Building;
+    to: Building;
+    optimalCO2: number; // 最適解のCO2排出量
+    description: string;
+};
+
 const authHelper = withAPIKey(process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY!, "us-east-1");
 const locationClient = new GeoRoutesClient(authHelper.getClientConfig());
 
@@ -104,6 +123,24 @@ interface GameContextType {
     removeFromDeliveryStack: (building: Building) => void;
     initDeliveryStack: () => void;
     setCurrentYear: (year: string) => void;
+
+    // すごろく関連
+    gamePhase: GamePhase;
+    currentPlayer: Player;
+    players: Player[];
+    currentQuest: DeliveryQuest | null;
+    diceValue: number;
+    isGameStarted: boolean;
+    boardPositions: Building[]; // すごろくボードの各マス（建物）
+
+    // すごろくアクション
+    rollDice: () => void;
+    movePlayer: (steps: number) => void;
+    startDeliveryEvent: () => void;
+    completeDeliveryEvent: () => void;
+    nextPlayer: () => void;
+    startGame: (playerNames: string[]) => void;
+    resetGame: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -119,6 +156,21 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [currentYear, setCurrentYear] = useState<string>("2017");
     const [availableYears, setAvailableYears] = useState<string[]>([]);
 
+    // すごろく関連の状態
+    const [gamePhase, setGamePhase] = useState<GamePhase>("dice");
+    const [currentPlayer, setCurrentPlayer] = useState<Player>({
+        id: 0,
+        name: "Player 1",
+        position: 0,
+        score: 0,
+        totalCO2Saved: 0,
+    });
+    const [players, setPlayers] = useState<Player[]>([]);
+    const [currentQuest, setCurrentQuest] = useState<DeliveryQuest | null>(null);
+    const [diceValue, setDiceValue] = useState<number>(0);
+    const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
+    const [boardPositions, setBoardPositions] = useState<Building[]>([]);
+
     // PortRouteValidatorを初期化
     useEffect(() => {
         const initializeValidator = async () => {
@@ -131,6 +183,27 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
         initializeValidator();
     }, [currentYear]);
+
+    // ボードポジションを初期化
+    useEffect(() => {
+        const initializeBoardPositions = async () => {
+            // storagePointとportPointからボードポジションを作成
+            const { storagePoint } = await import("./storagePoint");
+            const { portPoint } = await import("./portPoint");
+
+            const storages = storagePoint.getStorages();
+            const ports = portPoint.getPorts();
+
+            // 日本を横断するようなルートを作成（北から南、または西から東）
+            const allBuildings = [...storages, ...ports];
+            // 緯度でソート（北から南）
+            const sortedBuildings = allBuildings.sort((a, b) => b.coords.latitude - a.coords.latitude);
+
+            setBoardPositions(sortedBuildings);
+        };
+
+        initializeBoardPositions();
+    }, []);
 
     // ルートを再計算する関数
     const recalculateRoutes = useCallback(async (stack: Building[]) => {
@@ -326,6 +399,144 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         [initDeliveryStack]
     );
 
+    // すごろく関連のメソッド
+    const movePlayer = useCallback(
+        (steps: number) => {
+            setCurrentPlayer((prev) => {
+                const newPosition = Math.min(prev.position + steps, boardPositions.length - 1);
+                return { ...prev, position: newPosition };
+            });
+        },
+        [boardPositions.length]
+    );
+
+    const startDeliveryEvent = useCallback(() => {
+        if (boardPositions.length === 0) return;
+
+        const currentBuilding = boardPositions[currentPlayer.position];
+        if (!currentBuilding) return;
+
+        // ランダムに目的地を選択（現在地以外）
+        const availableDestinations = boardPositions.filter((_, index) => index !== currentPlayer.position);
+        const randomDestination = availableDestinations[Math.floor(Math.random() * availableDestinations.length)];
+
+        // 最適解を計算（簡単な直線距離ベース）
+        const distance = calculateStraightLineDistance(currentBuilding.coords, randomDestination.coords);
+        const optimalMethod: DeliveryMethod = randomDestination.type === "port" ? "ship" : "truck";
+        const optimalGasoline = calculateGasolineConsumption(optimalMethod, distance);
+        const optimalCO2 = calculateCO2Emission(optimalGasoline);
+
+        const quest: DeliveryQuest = {
+            id: Date.now(),
+            from: currentBuilding,
+            to: randomDestination,
+            optimalCO2: optimalCO2,
+            description: `${currentBuilding.name}から${randomDestination.name}に荷物を届けてください`,
+        };
+
+        setCurrentQuest(quest);
+        setGamePhase("delivery");
+
+        // 配送スタックを初期化し、開始地点を設定
+        initDeliveryStack();
+        
+        // 非同期で開始地点を設定（initDeliveryStackの後に実行されるように）
+        setTimeout(() => {
+            pushDeliveryStack(currentBuilding);
+        }, 10);
+    }, [boardPositions, currentPlayer.position, initDeliveryStack, pushDeliveryStack]);
+
+    const rollDice = useCallback(() => {
+        if (gamePhase !== "dice") return;
+
+        const value = Math.floor(Math.random() * 6) + 1;
+        setDiceValue(value);
+        movePlayer(value);
+
+        // 移動後、発送イベントを開始
+        setTimeout(() => {
+            startDeliveryEvent();
+        }, 1000);
+    }, [gamePhase, movePlayer, startDeliveryEvent]);
+
+    const nextPlayer = useCallback(() => {
+        if (players.length === 0) return;
+
+        const currentIndex = players.findIndex((p) => p.id === currentPlayer.id);
+        const nextIndex = (currentIndex + 1) % players.length;
+        setCurrentPlayer(players[nextIndex]);
+        setGamePhase("dice");
+    }, [players, currentPlayer.id]);
+
+    const completeDeliveryEvent = useCallback(() => {
+        if (!currentQuest) return;
+
+        // 目的地に到達しているかチェック
+        const lastBuilding = deliveryStack[deliveryStack.length - 1];
+        if (!lastBuilding || lastBuilding.id !== currentQuest.to.id) {
+            alert("目的地に到達していません！");
+            return;
+        }
+
+        // スコア計算（CO2削減率に基づく）
+        const playerCO2 = deliveryResult.co2Emission;
+        const optimalCO2 = currentQuest.optimalCO2;
+        const co2Saved = Math.max(0, optimalCO2 - playerCO2);
+        const scoreGained = Math.floor(co2Saved * 10);
+
+        setCurrentPlayer((prev) => ({
+            ...prev,
+            score: prev.score + scoreGained,
+            totalCO2Saved: prev.totalCO2Saved + co2Saved,
+        }));
+
+        // プレイヤーリストも更新
+        setPlayers((prev) =>
+            prev.map((p) => (p.id === currentPlayer.id ? { ...p, score: p.score + scoreGained, totalCO2Saved: p.totalCO2Saved + co2Saved } : p))
+        );
+
+        alert(`配送完了！ CO2削減量: ${co2Saved.toFixed(2)}kg, 獲得スコア: ${scoreGained}点`);
+
+        setCurrentQuest(null);
+        initDeliveryStack();
+        nextPlayer();
+    }, [currentQuest, deliveryStack, deliveryResult, currentPlayer, initDeliveryStack, nextPlayer]);
+
+    const startGame = useCallback(
+        (playerNames: string[]) => {
+            const newPlayers: Player[] = playerNames.map((name, index) => ({
+                id: index,
+                name,
+                position: 0,
+                score: 0,
+                totalCO2Saved: 0,
+            }));
+
+            setPlayers(newPlayers);
+            setCurrentPlayer(newPlayers[0]);
+            setIsGameStarted(true);
+            setGamePhase("dice");
+            initDeliveryStack();
+        },
+        [initDeliveryStack]
+    );
+
+    const resetGame = useCallback(() => {
+        setPlayers([]);
+        setCurrentPlayer({
+            id: 0,
+            name: "Player 1",
+            position: 0,
+            score: 0,
+            totalCO2Saved: 0,
+        });
+        setIsGameStarted(false);
+        setGamePhase("dice");
+        setCurrentQuest(null);
+        setDiceValue(0);
+        initDeliveryStack();
+    }, [initDeliveryStack]);
+
     return (
         <GameContext.Provider
             value={{
@@ -338,6 +549,24 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 removeFromDeliveryStack,
                 initDeliveryStack,
                 setCurrentYear: handleSetCurrentYear,
+
+                // すごろく関連
+                gamePhase,
+                currentPlayer,
+                players,
+                currentQuest,
+                diceValue,
+                isGameStarted,
+                boardPositions,
+
+                // すごろくアクション
+                rollDice,
+                movePlayer,
+                startDeliveryEvent,
+                completeDeliveryEvent,
+                nextPlayer,
+                startGame,
+                resetGame,
             }}
         >
             {children}
