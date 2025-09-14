@@ -21,10 +21,12 @@ const PlayerInfoComponent: React.FC = () => {
                             <div className="text-xs text-gray-600 space-y-1">
                                 <div>
                                     位置: {player.position + 1}/{boardPositions.length}
+                                    {boardPositions[player.position] && (
+                                        <span className="ml-2 text-blue-600 font-medium">({boardPositions[player.position].name})</span>
+                                    )}
                                 </div>
                                 <div>スコア: {player.score}点</div>
                                 <div>CO2削減: {player.totalCO2Saved.toFixed(1)}kg</div>
-                                {boardPositions[player.position] && <div className="text-green-600">現在地: {boardPositions[player.position].name}</div>}
                             </div>
                         </div>
                     ))}

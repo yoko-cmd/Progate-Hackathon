@@ -36,6 +36,7 @@ const ClickToAddPinMap: React.FC = () => {
         currentPlayer,
         boardPositions,
         gamePhase,
+        currentQuest,
     } = useGameContext();
 
     const storageBuildings = storagePoint.getStorages();
@@ -191,6 +192,24 @@ const ClickToAddPinMap: React.FC = () => {
 
         // 既存の中継地点マーカーをすべて削除
         document.querySelectorAll(".relay-marker").forEach((el) => el.remove());
+        
+        // 現在地（開始地点）のマーカーを追加
+        if (currentQuest && gamePhase === "delivery") {
+            const startEl = document.createElement("div");
+            startEl.className = "relay-marker start-marker";
+            startEl.style.backgroundColor = "#00ff00";  // 緑色で開始地点を表示
+            startEl.style.width = "16px";
+            startEl.style.height = "16px";
+            startEl.style.borderRadius = "50%";
+            startEl.style.border = "3px solid #ffffff";
+            startEl.style.boxSizing = "border-box";
+            startEl.style.transform = "translate(-50%, -50%)";
+
+            new maplibregl.Marker({ element: startEl })
+                .setLngLat([currentQuest.from.coords.longitude, currentQuest.from.coords.latitude])
+                .addTo(map.current!);
+        }
+        
         // 中継地点マーカーを追加
         deliveryStack.forEach((stack) => {
             const el = document.createElement("div");
@@ -206,7 +225,7 @@ const ClickToAddPinMap: React.FC = () => {
             new maplibregl.Marker({ element: el }).setLngLat([stack.coords.longitude, stack.coords.latitude]).addTo(map.current!);
         });
 
-        // 中継地点を配列の若い順番から線で結ぶ
+        // 配送ルートの線を描画（開始地点から）
         const lineId = "relay-line";
         if (map.current.getLayer(lineId)) {
             map.current.removeLayer(lineId);
@@ -214,8 +233,13 @@ const ClickToAddPinMap: React.FC = () => {
         if (map.current.getSource(lineId)) {
             map.current.removeSource(lineId);
         }
-        if (deliveryStack.length >= 2) {
-            const lineCoordinates = deliveryStack.map((stack) => [stack.coords.longitude, stack.coords.latitude]);
+        
+        if (currentQuest && gamePhase === "delivery" && deliveryStack.length >= 1) {
+            // 開始地点から配送スタックの全ての地点までの線を描画
+            const lineCoordinates = [
+                [currentQuest.from.coords.longitude, currentQuest.from.coords.latitude],
+                ...deliveryStack.map((stack) => [stack.coords.longitude, stack.coords.latitude])
+            ];
             map.current.addSource(lineId, {
                 type: "geojson",
                 data: {
@@ -248,7 +272,7 @@ const ClickToAddPinMap: React.FC = () => {
             // クリーンアップで中継地点マーカーを削除
             document.querySelectorAll(".relay-marker").forEach((el) => el.remove());
         };
-    }, [deliveryStack]);
+    }, [deliveryStack, currentQuest, gamePhase]);
 
     return (
         <div className="w-full h-screen relative">
