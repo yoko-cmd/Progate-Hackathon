@@ -326,12 +326,12 @@
     {
       "type": "Feature",
       "properties": {
-        "port": "平良"
+        "port": "那覇"
       },
       "geometry": {
         "coordinates": [
-          125.285,
-          24.806
+          127.6811,
+          26.2124
         ],
         "type": "Point"
       },
