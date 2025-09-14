@@ -208,20 +208,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         initializeValidator();
     }, [currentYear]);
 
-    // ボードポジションを初期化
+    // ボードポジションを初期化（港を除外して倉庫のみ）
     useEffect(() => {
         const initializeBoardPositions = async () => {
-            // storagePointとportPointからボードポジションを作成
+            // storagePointからボードポジションを作成（港は除外）
             const { storagePoint } = await import("./storagePoint");
-            const { portPoint } = await import("./portPoint");
 
             const storages = storagePoint.getStorages();
-            const ports = portPoint.getPorts();
 
             // 日本を横断するようなルートを作成（北から南、または西から東）
-            const allBuildings = [...storages, ...ports];
             // 緯度でソート（北から南）
-            const sortedBuildings = allBuildings.sort((a, b) => b.coords.latitude - a.coords.latitude);
+            const sortedBuildings = storages.sort((a, b) => b.coords.latitude - a.coords.latitude);
 
             setBoardPositions(sortedBuildings);
         };
