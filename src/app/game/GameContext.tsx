@@ -89,19 +89,19 @@ async function calculateDistance(from: { latitude: number; longitude: number }, 
 
         // Routes[0].Legsの中にVehicle以外のtype（Ferry等）が含まれていないかチェック
         if (response.Routes && response.Routes[0] && response.Routes[0].Legs) {
-            const hasNonVehicleTransport = response.Routes[0].Legs.some(leg => {
+            const hasNonVehicleTransport = response.Routes[0].Legs.some((leg) => {
                 // legのTravelModeがCarでない場合（Ferry、Walk等）は移動禁止
                 if (leg.TravelMode && leg.TravelMode !== "Car") {
                     console.warn(`Non-vehicle transport detected: ${leg.TravelMode}`);
                     return true;
                 }
-                
+
                 // GeometryやTypeでもチェック（フェリーやその他の交通手段を検出）
                 if (leg.Type && leg.Type.toLowerCase().includes("ferry")) {
                     console.warn(`Ferry transport detected in leg type: ${leg.Type}`);
                     return true;
                 }
-                
+
                 return false;
             });
 
@@ -233,8 +233,22 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const recalculateRoutes = useCallback(async (stack: Building[]) => {
         console.log("Recalculating routes for stack:", stack);
 
-        if (stack.length === 0) {
-            console.log("Stack is empty, resetting routes");
+        if (!currentQuest) {
+            console.log("No current quest, resetting routes");
+            setDeliveryRouteStack([]);
+            setDeliveryResult({
+                distance: 0,
+                gasolineConsumption: 0,
+                co2Emission: 0,
+            });
+            return;
+        }
+
+        // 配送スタックに開始地点を含めた完全なルートを作成
+        const completeRoute = [currentQuest.from, ...stack];
+        
+        if (completeRoute.length <= 1) {
+            console.log("Route is too short, resetting routes");
             setDeliveryRouteStack([]);
             setDeliveryResult({
                 distance: 0,
@@ -249,9 +263,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         let totalGasolineConsumption = 0;
         let totalCO2Emission = 0;
 
-        for (let i = 1; i < stack.length; i++) {
-            const fromBuilding = stack[i - 1];
-            const toBuilding = stack[i];
+        for (let i = 1; i < completeRoute.length; i++) {
+            const fromBuilding = completeRoute[i - 1];
+            const toBuilding = completeRoute[i];
 
             let method: DeliveryMethod;
             if (toBuilding.type === "port") {
@@ -266,15 +280,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 distance = calculateStraightLineDistance(fromBuilding.coords, toBuilding.coords);
             } else {
                 distance = await calculateDistance(fromBuilding.coords, toBuilding.coords);
-                
+
                 // calculateDistanceが0を返した場合（フェリーなど非車両交通手段が含まれる場合）
                 if (distance === 0) {
                     console.warn(`Route from ${fromBuilding.name} to ${toBuilding.name} contains non-vehicle transport. Removing invalid route.`);
                     // 無効なルートが含まれる場合、そこまでのスタックで計算を停止
                     const validStack = stack.slice(0, i);
                     setDeliveryStack(validStack);
-                    alert(`${fromBuilding.name}から${toBuilding.name}への陸路ルートには車両以外の交通手段（フェリーなど）が含まれているため、${toBuilding.name}以降のルートは削除されました。`);
-                    
+                    alert(
+                        `${fromBuilding.name}から${toBuilding.name}への陸路ルートには車両以外の交通手段（フェリーなど）が含まれているため、${toBuilding.name}以降のルートは削除されました。`
+                    );
+
                     // 有効な部分までのルートで再計算
                     if (validStack.length > 1) {
                         recalculateRoutes(validStack);
@@ -315,7 +331,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             gasolineConsumption: totalGasolineConsumption,
             co2Emission: totalCO2Emission,
         });
-    }, []);
+    }, [currentQuest]);
 
     const removeFromDeliveryStack = useCallback(
         (building: Building) => {
@@ -361,14 +377,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
                 console.log("Building does not exist, adding...");
 
-                // 新しい建物を追加する処理
-                let method: DeliveryMethod;
-                if (building.type === "port") {
-                    method = "ship";
-                } else {
-                    method = "truck";
-                }
-
                 // 港から港への配送の場合、ルート検証を行う
                 if (currentStack.length > 0) {
                     const lastBuilding = currentStack[currentStack.length - 1];
@@ -389,44 +397,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 const newStack = [...currentStack, building];
                 console.log("New stack after addition:", newStack);
 
-                // 追加後のルート計算（非同期）
-                setTimeout(async () => {
-                    if (currentStack.length > 0) {
-                        let distance: number;
-                        if (method === "ship") {
-                            distance = calculateStraightLineDistance(currentStack[currentStack.length - 1].coords, building.coords);
-                        } else {
-                            distance = await calculateDistance(currentStack[currentStack.length - 1].coords, building.coords);
-                            
-                            // calculateDistanceが0を返した場合（フェリーなど非車両交通手段が含まれる場合）
-                            if (distance === 0) {
-                                alert(`${currentStack[currentStack.length - 1].name}から${building.name}への陸路ルートには車両以外の交通手段（フェリーなど）が含まれているため、トラックでの配送はできません。`);
-                                // ルートを追加せず、建物もスタックから削除
-                                setDeliveryStack((prevStack) => prevStack.filter((b) => b.id !== building.id));
-                                return;
-                            }
-                        }
-
-                        const gasolineConsumption = calculateGasolineConsumption(method, distance);
-                        const co2Emission = calculateCO2Emission(gasolineConsumption);
-
-                        setDeliveryRouteStack((prevRouteStack) => [
-                            ...prevRouteStack,
-                            {
-                                method,
-                                distance,
-                                gasolineConsumption,
-                                co2Emission,
-                            },
-                        ]);
-
-                        setDeliveryResult((prevResult) => ({
-                            distance: prevResult.distance + distance,
-                            gasolineConsumption: prevResult.gasolineConsumption + gasolineConsumption,
-                            co2Emission: prevResult.co2Emission + co2Emission,
-                        }));
-                    }
-                }, 0);
+                // 追加後のルート再計算（非同期）
+                setTimeout(() => recalculateRoutes(newStack), 0);
 
                 return newStack;
             });
@@ -458,7 +430,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         (steps: number) => {
             setCurrentPlayer((prev) => {
                 const newPosition = Math.min(prev.position + steps, boardPositions.length - 1);
-                return { ...prev, position: newPosition };
+                const updatedPlayer = { ...prev, position: newPosition };
+
+                // players配列も同時に更新
+                setPlayers((prevPlayers) => prevPlayers.map((p) => (p.id === prev.id ? updatedPlayer : p)));
+
+                return updatedPlayer;
             });
         },
         [boardPositions.length]
@@ -491,14 +468,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCurrentQuest(quest);
         setGamePhase("delivery");
 
-        // 配送スタックを初期化し、開始地点を設定
+        // 配送スタックを初期化（開始地点は含めない）
         initDeliveryStack();
-
-        // 非同期で開始地点を設定（initDeliveryStackの後に実行されるように）
-        setTimeout(() => {
-            pushDeliveryStack(currentBuilding);
-        }, 10);
-    }, [boardPositions, currentPlayer.position, initDeliveryStack, pushDeliveryStack]);
+    }, [boardPositions, currentPlayer.position, initDeliveryStack]);
 
     const rollDice = useCallback(() => {
         if (gamePhase !== "dice") return;
@@ -518,16 +490,24 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const currentIndex = players.findIndex((p) => p.id === currentPlayer.id);
         const nextIndex = (currentIndex + 1) % players.length;
-        setCurrentPlayer(players[nextIndex]);
+        const nextPlayerData = players[nextIndex];
+
+        setCurrentPlayer(nextPlayerData);
         setGamePhase("dice");
+        setDiceValue(0); // サイコロの値をリセット
     }, [players, currentPlayer.id]);
 
     const completeDeliveryEvent = useCallback(() => {
         if (!currentQuest) return;
 
         // 目的地に到達しているかチェック
-        const lastBuilding = deliveryStack[deliveryStack.length - 1];
-        if (!lastBuilding || lastBuilding.id !== currentQuest.to.id) {
+        // 配送スタックが空の場合は開始地点にいることを意味し、
+        // スタックに要素がある場合は最後の要素が現在地
+        const isAtDestination = deliveryStack.length === 0 
+            ? currentQuest.from.id === currentQuest.to.id  // 開始地点と目的地が同じ場合
+            : deliveryStack[deliveryStack.length - 1].id === currentQuest.to.id;
+
+        if (!isAtDestination) {
             alert("目的地に到達していません！");
             return;
         }
