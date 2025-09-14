@@ -36,8 +36,8 @@
       },
       "geometry": {
         "coordinates": [
-          130.11,
-          33.085
+          140.644,
+          35.97
         ],
         "type": "Point"
       },
@@ -232,8 +232,8 @@
       },
       "geometry": {
         "coordinates": [
-          133.33,
-          36.2
+          140.154,
+          37.14
         ],
         "type": "Point"
       },
@@ -453,20 +453,6 @@
     {
       "type": "Feature",
       "properties": {
-        "port": "鹿島"
-      },
-      "geometry": {
-        "coordinates": [
-          140.665,
-          35.965
-        ],
-        "type": "Point"
-      },
-      "id": 32
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "port": "西郷"
       },
       "geometry": {
@@ -476,7 +462,7 @@
         ],
         "type": "Point"
       },
-      "id": 33
+      "id": 32
     },
     {
       "type": "Feature",
@@ -485,12 +471,12 @@
       },
       "geometry": {
         "coordinates": [
-          141.462,
+          141.463,
           41.43
         ],
         "type": "Point"
       },
-      "id": 34
+      "id": 33
     },
     {
       "type": "Feature",
@@ -504,7 +490,7 @@
         ],
         "type": "Point"
       },
-      "id": 35
+      "id": 34
     },
     {
       "type": "Feature",
@@ -518,7 +504,7 @@
         ],
         "type": "Point"
       },
-      "id": 36
+      "id": 35
     },
     {
       "type": "Feature",
@@ -532,7 +518,7 @@
         ],
         "type": "Point"
       },
-      "id": 37
+      "id": 36
     },
     {
       "type": "Feature",
@@ -546,7 +532,7 @@
         ],
         "type": "Point"
       },
-      "id": 38
+      "id": 37
     },
     {
       "type": "Feature",
@@ -560,7 +546,7 @@
         ],
         "type": "Point"
       },
-      "id": 39
+      "id": 38
     }
   ]
 }
