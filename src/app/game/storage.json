@@ -680,45 +680,6 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "八戸市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          140.7474,
-          40.8222
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "石巻市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          140.8694,
-          38.2682
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "いわき市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          140.4678,
-          37.7503
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "高崎市"
       },
       "geometry": {
@@ -745,19 +706,6 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "銚子市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          140.1233,
-          35.6074
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "八王子市"
       },
       "geometry": {
@@ -778,32 +726,6 @@
         "coordinates": [
           139.7038,
           35.5309
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "横須賀市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          139.638,
-          35.4437
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "佐渡市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          139.0364,
-          37.9161
         ]
       }
     },
@@ -901,45 +823,6 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "彦根市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          135.8652,
-          35.0044
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "舞鶴市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          135.7681,
-          35.0116
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "堺市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          135.5023,
-          34.6937
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "姫路市"
       },
       "geometry": {
@@ -953,45 +836,6 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "白浜町"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          135.1675,
-          34.2304
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "米子市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          134.2383,
-          35.503
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "出雲市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          133.0505,
-          35.4682
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "倉敷市"
       },
       "geometry": {
@@ -999,71 +843,6 @@
         "coordinates": [
           133.7702,
           34.5802
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "呉市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          132.4553,
-          34.3853
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "下関市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          131.4715,
-          34.1859
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "鳴門市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          134.5548,
-          34.0701
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "宇和島市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          132.7653,
-          33.8394
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "四万十市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          133.5311,
-          33.5594
         ]
       }
     },
@@ -1096,162 +875,6 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "佐世保市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          130.3008,
-          33.264
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "対馬市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          130.4017,
-          33.5904
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "天草市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          130.7079,
-          32.8032
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "別府市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          131.6126,
-          33.2382
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "延岡市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          131.4239,
-          31.9068
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "鹿屋市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          130.5577,
-          31.5969
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "奄美市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          127.6811,
-          26.2124
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "小笠原村"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          139.7528,
-          35.6895
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "根室市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          141.3544,
-          43.0621
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "八戸市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          140.7474,
-          40.8222
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "石巻市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          140.8694,
-          38.2682
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "いわき市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          140.4678,
-          37.7503
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "高崎市"
       },
       "geometry": {
@@ -1278,19 +901,6 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "銚子市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          140.1233,
-          35.6074
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "八王子市"
       },
       "geometry": {
@@ -1311,32 +921,6 @@
         "coordinates": [
           139.7038,
           35.5309
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "横須賀市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          139.638,
-          35.4437
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "佐渡市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          139.0364,
-          37.9161
         ]
       }
     },
@@ -1434,45 +1018,6 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "彦根市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          135.8652,
-          35.0044
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "舞鶴市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          135.7681,
-          35.0116
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "堺市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          135.5023,
-          34.6937
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "姫路市"
       },
       "geometry": {
@@ -1486,45 +1031,6 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "白浜町"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          135.1675,
-          34.2304
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "米子市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          134.2383,
-          35.503
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "出雲市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          133.0505,
-          35.4682
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "倉敷市"
       },
       "geometry": {
@@ -1532,71 +1038,6 @@
         "coordinates": [
           133.7702,
           34.5802
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "呉市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          132.4553,
-          34.3853
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "下関市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          131.4715,
-          34.1859
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "鳴門市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          134.5548,
-          34.0701
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "宇和島市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          132.7653,
-          33.8394
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "四万十市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          133.5311,
-          33.5594
         ]
       }
     },
@@ -1623,110 +1064,6 @@
         "coordinates": [
           130.5074,
           33.3183
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "佐世保市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          130.3008,
-          33.264
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "対馬市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          130.4017,
-          33.5904
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "天草市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          130.7079,
-          32.8032
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "別府市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          131.6126,
-          33.2382
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "延岡市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          131.4239,
-          31.9068
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "鹿屋市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          130.5577,
-          31.5969
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "奄美市"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          127.6811,
-          26.2124
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "小笠原村"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          139.7528,
-          35.6895
         ]
       }
     }
