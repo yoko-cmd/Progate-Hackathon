@@ -91,7 +91,7 @@ const ClickToAddPinMap: React.FC = () => {
             // マーカーのスタイルを調整
             el.style.transform = "translate(-50%, -100%)"; // ピンの底辺を座標に合わせる
             el.style.cursor = "pointer"; // カーソルをポインターに変更
-            
+
             // delivery フェーズ中は枠線を追加して選択可能であることを示す
             if (gamePhase === "delivery") {
                 el.style.filter = "drop-shadow(0 0 8px rgba(255, 255, 0, 0.8))";
@@ -121,7 +121,7 @@ const ClickToAddPinMap: React.FC = () => {
             el.style.boxSizing = "border-box";
             el.style.transform = "translate(-50%, -50%)";
             el.style.cursor = "pointer"; // カーソルをポインターに変更
-            
+
             // delivery フェーズ中はボーダーを明るくして選択可能であることを示す
             if (gamePhase === "delivery") {
                 el.style.border = "3px solid #ffff00";
@@ -143,7 +143,7 @@ const ClickToAddPinMap: React.FC = () => {
             document.querySelectorAll(".storage-marker").forEach((el) => el.remove());
             document.querySelectorAll(".port-marker").forEach((el) => el.remove());
         };
-        }, [storageBuildings, pushDeliveryStack, portBuildings, gamePhase]); // pushDeliveryStackを依存配列に追加    // プレイヤーマーカーを表示するエフェクト
+    }, [storageBuildings, pushDeliveryStack, portBuildings, gamePhase]); // pushDeliveryStackを依存配列に追加    // プレイヤーマーカーを表示するエフェクト
     useEffect(() => {
         if (!map.current || !isGameStarted || boardPositions.length === 0) return;
 

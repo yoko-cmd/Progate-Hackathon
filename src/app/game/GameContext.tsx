@@ -87,6 +87,30 @@ async function calculateDistance(from: { latitude: number; longitude: number }, 
 
         console.log("Successfully calculated route. The distance in kilometers is : ", response);
 
+        // Routes[0].Legsの中にVehicle以外のtype（Ferry等）が含まれていないかチェック
+        if (response.Routes && response.Routes[0] && response.Routes[0].Legs) {
+            const hasNonVehicleTransport = response.Routes[0].Legs.some(leg => {
+                // legのTravelModeがCarでない場合（Ferry、Walk等）は移動禁止
+                if (leg.TravelMode && leg.TravelMode !== "Car") {
+                    console.warn(`Non-vehicle transport detected: ${leg.TravelMode}`);
+                    return true;
+                }
+                
+                // GeometryやTypeでもチェック（フェリーやその他の交通手段を検出）
+                if (leg.Type && leg.Type.toLowerCase().includes("ferry")) {
+                    console.warn(`Ferry transport detected in leg type: ${leg.Type}`);
+                    return true;
+                }
+                
+                return false;
+            });
+
+            if (hasNonVehicleTransport) {
+                console.warn("Route contains non-vehicle transport (Ferry, Walk, etc.). Movement prohibited.");
+                return 0; // 移動禁止の場合は距離0を返す
+            }
+        }
+
         return (response.Routes![0].Summary?.Distance ?? 0) / 1000;
     } catch (caught: unknown) {
         if (caught instanceof Error) {
@@ -242,6 +266,28 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 distance = calculateStraightLineDistance(fromBuilding.coords, toBuilding.coords);
             } else {
                 distance = await calculateDistance(fromBuilding.coords, toBuilding.coords);
+                
+                // calculateDistanceが0を返した場合（フェリーなど非車両交通手段が含まれる場合）
+                if (distance === 0) {
+                    console.warn(`Route from ${fromBuilding.name} to ${toBuilding.name} contains non-vehicle transport. Removing invalid route.`);
+                    // 無効なルートが含まれる場合、そこまでのスタックで計算を停止
+                    const validStack = stack.slice(0, i);
+                    setDeliveryStack(validStack);
+                    alert(`${fromBuilding.name}から${toBuilding.name}への陸路ルートには車両以外の交通手段（フェリーなど）が含まれているため、${toBuilding.name}以降のルートは削除されました。`);
+                    
+                    // 有効な部分までのルートで再計算
+                    if (validStack.length > 1) {
+                        recalculateRoutes(validStack);
+                    } else {
+                        setDeliveryRouteStack([]);
+                        setDeliveryResult({
+                            distance: 0,
+                            gasolineConsumption: 0,
+                            co2Emission: 0,
+                        });
+                    }
+                    return;
+                }
             }
 
             const gasolineConsumption = calculateGasolineConsumption(method, distance);
@@ -351,6 +397,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             distance = calculateStraightLineDistance(currentStack[currentStack.length - 1].coords, building.coords);
                         } else {
                             distance = await calculateDistance(currentStack[currentStack.length - 1].coords, building.coords);
+                            
+                            // calculateDistanceが0を返した場合（フェリーなど非車両交通手段が含まれる場合）
+                            if (distance === 0) {
+                                alert(`${currentStack[currentStack.length - 1].name}から${building.name}への陸路ルートには車両以外の交通手段（フェリーなど）が含まれているため、トラックでの配送はできません。`);
+                                // ルートを追加せず、建物もスタックから削除
+                                setDeliveryStack((prevStack) => prevStack.filter((b) => b.id !== building.id));
+                                return;
+                            }
                         }
 
                         const gasolineConsumption = calculateGasolineConsumption(method, distance);
@@ -439,7 +493,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         // 配送スタックを初期化し、開始地点を設定
         initDeliveryStack();
-        
+
         // 非同期で開始地点を設定（initDeliveryStackの後に実行されるように）
         setTimeout(() => {
             pushDeliveryStack(currentBuilding);
